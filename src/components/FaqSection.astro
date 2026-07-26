@@ -1,0 +1,46 @@
+---
+import Icon from "./Icon.astro";
+import { getOrdered, getSection } from "../lib/content";
+
+const section = await getSection("faq");
+const faqs = await getOrdered("faqs");
+---
+
+<section id="faq" class="bg-slate-50 border-t border-slate-100 py-24">
+  <div class="max-w-6xl mx-auto px-6">
+    {/* Header */}
+    <div class="anim anim-up text-center mb-14">
+      <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-[#13b5ea] mb-3">
+        {section.eyebrow}
+      </p>
+      <h2 class="text-[2.2rem] font-extrabold text-slate-900 tracking-tight">
+        {section.heading}
+      </h2>
+      <p class="text-slate-400 mt-3 text-base max-w-lg mx-auto">{section.subheading}</p>
+    </div>
+
+    {/* Accordion. Uses <details> so every answer is in the HTML, readable
+         without JS and directly quotable by answer engines. */}
+    <div class="space-y-4 max-w-3xl mx-auto">
+      {
+        faqs.map((faq, i) => (
+          <details
+            name="faq"
+            class="anim anim-up group bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300"
+            style={`--anim-delay: ${(i * 0.08).toFixed(2)}s`}
+          >
+            <summary class="w-full px-6 py-4.5 flex items-center justify-between text-left font-bold text-slate-800 text-base sm:text-lg hover:text-[#13b5ea] transition-colors cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+              <span>{faq.data.question}</span>
+              <span class="text-slate-400 shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180">
+                <Icon name="ChevronDown" size={18} />
+              </span>
+            </summary>
+            <div class="px-6 pb-5 pt-1 text-slate-500 text-sm sm:text-base leading-relaxed border-t border-slate-100/50">
+              {faq.data.answer}
+            </div>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>

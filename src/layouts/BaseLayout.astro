@@ -1,0 +1,216 @@
+---
+/**
+ * Every page's <head> and shared chrome.
+ *
+ * The React app injected its title/description/canonical/JSON-LD from a
+ * `useEffect` after hydration, so the HTML crawlers received had none of it.
+ * All of it is now rendered at build time.
+ */
+import { getSite } from "../lib/content";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Path or absolute URL. Defaults to the current page. */
+  canonical?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  /** "website" for pages, "article" for blog posts. */
+  ogType?: "website" | "article";
+  /** One or more schema.org graphs, emitted as application/ld+json. */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Page background — the landing page is white, the blog index is slate. */
+  bodyClass?: string;
+  noindex?: boolean;
+}
+
+const brand = await getSite("brand");
+
+const {
+  title,
+  description = brand.defaultDescription,
+  canonical,
+  ogTitle = title,
+  ogDescription = description,
+  ogImage = brand.ogImage,
+  ogType = "website",
+  jsonLd,
+  bodyClass = "bg-white",
+  noindex = false,
+} = Astro.props;
+
+const siteUrl = (brand.url ?? Astro.site?.href ?? "").replace(/\/$/, "");
+const canonicalUrl = canonical
+  ? /^https?:\/\//.test(canonical)
+    ? canonical
+    : siteUrl + canonical
+  : new URL(Astro.url.pathname, Astro.site ?? siteUrl).href.replace(/\/$/, "") || siteUrl + "/";
+const ogImageUrl = ogImage?.startsWith("http") ? ogImage : siteUrl + ogImage;
+
+const graphs = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href={brand.favicon} />
+    <meta name="theme-color" content="#13b5ea" />
+    <meta name="generator" content={Astro.generator} />
+
+    {/* Fonts: preconnected and loaded as a real stylesheet rather than an
+         @import inside a runtime <style>, which used to serialise the download. */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content={brand.name} />
+    <meta property="og:locale" content="en_GB" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={ogDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <meta name="sitemap" content="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${brand.name} Blog`} href="/rss.xml" />
+
+    {
+      graphs.map((graph) => (
+        <script type="application/ld+json" set:html={JSON.stringify(graph)} />
+      ))
+    }
+
+    {/* Marks the document as JS-capable. Entrance animations only hide content
+         once this class is present, so no-JS visitors and crawlers that skip
+         scripts still see everything. */}
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
+
+    <!-- Google Tag Manager -->
+    <script is:inline define:vars={{ gtmId: brand.gtmId }}>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", gtmId);
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Google Ads Tag -->
+    <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${brand.googleAdsId}`}
+    ></script>
+    <script is:inline define:vars={{ adsId: brand.googleAdsId }}>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      window.gtag = gtag;
+      gtag("js", new Date());
+      gtag("config", adsId);
+    </script>
+    <!-- End Google Ads Tag -->
+  </head>
+
+  <body class={`min-h-screen font-sans ${bodyClass}`}>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript
+      ><iframe
+        src={`https://www.googletagmanager.com/ns.html?id=${brand.gtmId}`}
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"></iframe></noscript
+    >
+    <!-- End Google Tag Manager (noscript) -->
+
+    <slot />
+
+    <script>
+      // Reveal-on-scroll, replacing framer-motion's `initial`/`whileInView`.
+      const animated = document.querySelectorAll<HTMLElement>(".anim");
+
+      if (animated.length) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("in");
+                observer.unobserve(entry.target);
+              }
+            }
+          },
+          { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+        );
+        animated.forEach((el) => observer.observe(el));
+      }
+
+      // Scroll-depth funnel events, previously wired up in the Hero component.
+      const funnel: Array<[string, string]> = [
+        ["features", "features"],
+        ["how-it-works", "how_it_works"],
+        ["book-demo", "book_demo"],
+      ];
+
+      for (const [id, label] of funnel) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const observer = new IntersectionObserver(
+          (entries) => {
+            if (entries[0].isIntersecting) {
+              window.gtag?.("event", "section_view", {
+                event_category: "scroll_funnel",
+                event_label: label,
+              });
+              observer.disconnect();
+            }
+          },
+          { threshold: 0.3 }
+        );
+        observer.observe(el);
+      }
+
+      // Fires once when the footer is reached.
+      const footer = document.querySelector("footer");
+      if (footer) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            if (entries[0].isIntersecting) {
+              window.gtag?.("event", "scrolled_to_bottom", { event_category: "engagement" });
+              observer.disconnect();
+            }
+          },
+          { threshold: 0.5 }
+        );
+        observer.observe(footer);
+      }
+    </script>
+  </body>
+</html>

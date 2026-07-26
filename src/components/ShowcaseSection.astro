@@ -1,0 +1,69 @@
+---
+import { Image } from "astro:assets";
+import Icon from "./Icon.astro";
+import { getSection } from "../lib/content";
+import heroImg from "../assets/hero.png";
+
+const showcase = await getSection("showcase");
+const { badge, headline, subheading, bullets, ctas, image } = showcase;
+const cta = ctas[0];
+---
+
+<section class="max-w-7xl mx-auto px-6 py-24">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+    {/* Picture */}
+    <div class="anim anim-left order-1">
+      <Image
+        src={heroImg}
+        alt={image?.alt ?? ""}
+        widths={[480, 800, 1200]}
+        sizes="(min-width: 1024px) 40vw, 90vw"
+        class="w-full h-auto object-contain rounded-2xl"
+      />
+    </div>
+
+    {/* 1 month free offer — left aligned */}
+    <div class="anim anim-right order-2 text-left" style="--anim-delay: 0.1s">
+      <div
+        class="inline-flex items-center gap-2 bg-[#13b5ea]/10 text-[#13b5ea] text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-widest"
+      >
+        <Icon name="Gift" size={12} />
+        {badge}
+      </div>
+
+      <h2 class="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight tracking-tight mb-5">
+        {headline?.before} <span class="text-[#13b5ea]">{headline?.accent}</span>
+      </h2>
+
+      <p class="text-lg text-gray-600 mb-7 max-w-lg">{subheading}</p>
+
+      <div class="space-y-3 mb-8">
+        {
+          bullets.map((bullet) => (
+            <div class="flex items-center gap-3 text-gray-700">
+              <span class="w-5 h-5 rounded-full bg-[#13b5ea]/10 flex items-center justify-center shrink-0">
+                <Icon name="Check" size={12} class="text-[#13b5ea]" />
+              </span>
+              <span class="text-sm">{bullet.text}</span>
+            </div>
+          ))
+        }
+      </div>
+
+      {
+        cta && (
+          <button
+            type="button"
+            data-open-popup
+            data-event="cta_click"
+            data-event-label={cta.event}
+            class="inline-flex items-center gap-2 bg-[#13b5ea] text-white font-semibold px-9 py-4 rounded-xl hover:bg-[#0e9fd2] transition-colors text-base shadow-lg shadow-[#13b5ea]/30 cursor-pointer"
+          >
+            {cta.label}
+            <Icon name="ArrowRight" size={18} />
+          </button>
+        )
+      }
+    </div>
+  </div>
+</section>

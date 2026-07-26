@@ -1,0 +1,315 @@
+---
+import Icon from "./Icon.astro";
+import { getSection, getSite } from "../lib/content";
+
+const brand = await getSite("brand");
+const section = await getSection("email-popup");
+const { badge, headline, subheading, scarcity, form, trustPoints } = section;
+---
+
+<div
+  data-email-popup
+  hidden
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="email-popup-title"
+  class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+>
+  <div
+    data-popup-card
+    class="relative w-full max-w-lg rounded-3xl overflow-hidden border border-white/10 bg-[#0a0e17] shadow-2xl"
+  >
+    <button
+      type="button"
+      data-popup-close
+      aria-label="Close"
+      class="absolute top-5 right-5 text-white/40 hover:text-white transition-colors z-10 cursor-pointer"
+    >
+      <Icon name="X" size={22} />
+    </button>
+
+    <div class="relative px-10 pt-12 pb-10">
+      {/* Success state */}
+      <div data-popup-success hidden>
+        <div class="text-center py-6">
+          <div class="relative w-20 h-20 mx-auto mb-6">
+            <span class="absolute inset-0 rounded-full bg-[#13b5ea]/30 animate-ping"></span>
+            <span
+              class="relative flex items-center justify-center w-20 h-20 rounded-full bg-[#13b5ea] shadow-xl shadow-[#13b5ea]/40"
+            >
+              <Icon name="Check" size={40} strokeWidth={3} class="text-white" />
+            </span>
+          </div>
+
+          <h4 class="text-white font-bold text-3xl mb-3">{form?.successTitle}</h4>
+          <p class="text-white/60 text-sm leading-relaxed max-w-xs mx-auto mb-6">
+            {form?.successMessage}
+          </p>
+
+          <div
+            class="inline-flex items-center gap-2 bg-[#13b5ea]/15 text-[#13b5ea] text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest"
+          >
+            <Icon name="Gift" size={13} />
+            {form?.note}
+          </div>
+        </div>
+      </div>
+
+      {/* Idle state */}
+      <div data-popup-idle>
+        <div
+          class="inline-flex items-center gap-2 bg-[#13b5ea]/15 text-[#13b5ea] text-xs font-bold px-3 py-1.5 rounded-full mb-5 uppercase tracking-widest"
+        >
+          <Icon name="Gift" size={12} />
+          {badge}
+        </div>
+
+        <h3 id="email-popup-title" class="text-4xl font-bold leading-tight text-white">
+          {headline?.before} <span class="text-[#13b5ea]">{headline?.accent}</span>
+        </h3>
+        <p class="text-white/55 text-sm mt-3 mb-6 leading-relaxed">{subheading}</p>
+
+        {/* Scarcity / pressure */}
+        {
+          scarcity && (
+            <div class="mb-7" data-scarcity={JSON.stringify(scarcity)}>
+              <div class="flex items-center justify-between mb-2">
+                <span class="flex items-center gap-1.5 text-amber-400 text-sm font-semibold">
+                  <Icon name="Flame" size={14} />
+                  <span data-spots-label />
+                </span>
+                <span class="text-white/40 text-xs" data-claimed-label />
+              </div>
+              <div class="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                <div
+                  data-scarcity-bar
+                  class="h-full rounded-full bg-amber-400 transition-all duration-500"
+                  style="width: 0%"
+                />
+              </div>
+            </div>
+          )
+        }
+
+        <form
+          data-popup-form
+          data-error={form?.errorMessage}
+          data-connection-error={form?.connectionErrorMessage}
+          class="space-y-3"
+        >
+          <input type="hidden" name="access_key" value={brand.formAccessKey} />
+          <input type="hidden" name="source" value={form?.source} />
+          <label for="popup-email" class="sr-only">{form?.placeholder}</label>
+          <input
+            id="popup-email"
+            type="email"
+            name="email"
+            required
+            autocomplete="email"
+            placeholder={form?.placeholder}
+            class="w-full bg-white/5 border border-white/10 text-white text-base rounded-xl px-5 py-4 placeholder-white/30 focus:outline-none focus:border-[#13b5ea] focus:bg-white/10 transition-all"
+          />
+          <button
+            type="submit"
+            class="w-full bg-[#13b5ea] text-white font-bold py-5 rounded-xl hover:bg-[#0e9fd2] transition-all text-lg flex items-center justify-center gap-2 shadow-xl shadow-[#13b5ea]/40 hover:shadow-[#13b5ea]/50 hover:scale-[1.02] disabled:cursor-not-allowed disabled:hover:scale-100 cursor-pointer"
+          >
+            <span data-label>{form?.submitLabel}</span>
+            <span data-loading class="inline-flex items-center gap-2" hidden>
+              <Icon name="Loader" size={18} class="animate-spin" />
+              {form?.loadingLabel}
+            </span>
+          </button>
+        </form>
+        <p data-popup-error class="text-xs text-red-400 mt-2" hidden></p>
+
+        <div class="flex items-center justify-center gap-5 mt-6 text-xs text-white/40">
+          {
+            trustPoints.map((point) => (
+              <span class="flex items-center gap-1">
+                <Icon name="Check" size={12} class="text-[#13b5ea]" />
+                {point}
+              </span>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  interface Scarcity {
+    totalSpots: number;
+    baseSpotsLeft: number;
+    minSpotsLeft: number;
+    decayStart: string;
+    decayEveryDays: number;
+    decayAmount: number;
+    label: string;
+    claimedLabel: string;
+  }
+
+  const popup = document.querySelector<HTMLElement>("[data-email-popup]");
+
+  if (popup) {
+    const idle = popup.querySelector<HTMLElement>("[data-popup-idle]")!;
+    const success = popup.querySelector<HTMLElement>("[data-popup-success]")!;
+    const form = popup.querySelector<HTMLFormElement>("[data-popup-form]")!;
+    const errorEl = popup.querySelector<HTMLElement>("[data-popup-error]")!;
+    const button = form.querySelector<HTMLButtonElement>("button[type=submit]")!;
+    const label = button.querySelector<HTMLElement>("[data-label]")!;
+    const loading = button.querySelector<HTMLElement>("[data-loading]")!;
+    const input = form.querySelector<HTMLInputElement>("input[name=email]")!;
+    const scarcityEl = popup.querySelector<HTMLElement>("[data-scarcity]");
+
+    let submitted = false;
+    let emailStarted = false;
+
+    const fill = (text: string, vars: Record<string, number>) =>
+      text.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+
+    /**
+     * Spots remaining today: starts at `baseSpotsLeft` and drops `decayAmount`
+     * every `decayEveryDays` from `decayStart`, never below `minSpotsLeft`.
+     * Signing up takes one more so it feels personal to this visitor.
+     */
+    const renderScarcity = () => {
+      if (!scarcityEl) return;
+      const s: Scarcity = JSON.parse(scarcityEl.dataset.scarcity!);
+      const signedUp = !!localStorage.getItem("ledgerSignedUp");
+
+      const days = Math.floor(
+        (Date.now() - Date.parse(s.decayStart + "T00:00:00")) / 86_400_000
+      );
+      let left = s.baseSpotsLeft;
+      if (days >= 0) {
+        const periods = Math.floor(days / s.decayEveryDays) + 1;
+        left = s.baseSpotsLeft - periods * s.decayAmount;
+      }
+      if (signedUp) left -= 1;
+      left = Math.max(s.minSpotsLeft, left);
+
+      const claimed = s.totalSpots - left;
+      scarcityEl.querySelector("[data-spots-label]")!.textContent = fill(s.label, {
+        left,
+        total: s.totalSpots,
+      });
+      scarcityEl.querySelector("[data-claimed-label]")!.textContent = fill(s.claimedLabel, {
+        claimed,
+      });
+      scarcityEl.querySelector<HTMLElement>("[data-scarcity-bar]")!.style.width =
+        `${(claimed / s.totalSpots) * 100}%`;
+    };
+
+    const open = (source: "auto" | "manual" = "manual") => {
+      window.gtag?.("event", "popup_opened", {
+        event_category: "engagement",
+        event_label: source,
+      });
+      renderScarcity();
+      emailStarted = false;
+      submitted = false;
+      popup.hidden = false;
+      document.body.style.overflow = "hidden";
+      setTimeout(() => input.focus(), 120);
+    };
+
+    const close = () => {
+      if (!submitted) {
+        window.gtag?.("event", "popup_dismissed", { event_category: "engagement" });
+      }
+      localStorage.setItem("leadPopupSeen", "true");
+      popup.hidden = true;
+      document.body.style.overflow = "";
+    };
+
+    window.openEmailPopup = () => open("manual");
+
+    // Anything marked `data-open-popup` opens it (top bar, showcase CTA).
+    document.querySelectorAll<HTMLElement>("[data-open-popup]").forEach((el) => {
+      el.addEventListener("click", () => {
+        const event = el.dataset.event;
+        if (event) {
+          window.gtag?.("event", event, {
+            event_category: "engagement",
+            event_label: el.dataset.eventLabel,
+          });
+        }
+        open("manual");
+      });
+    });
+
+    popup.querySelector("[data-popup-close]")!.addEventListener("click", close);
+    popup.addEventListener("click", (e) => {
+      if (e.target === popup) close();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !popup.hidden) close();
+    });
+
+    // Auto-open once per visitor when they reach the "how it works" section.
+    if (!localStorage.getItem("leadPopupSeen")) {
+      const target = document.getElementById("how-it-works");
+      if (target) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            if (entries[0].isIntersecting) {
+              open("auto");
+              localStorage.setItem("leadPopupSeen", "true");
+              observer.disconnect();
+            }
+          },
+          { threshold: 0.25 }
+        );
+        observer.observe(target);
+      }
+    }
+
+    input.addEventListener("input", () => {
+      if (!emailStarted && input.value.length > 0) {
+        emailStarted = true;
+        window.gtag?.("event", "email_started", {
+          event_category: "engagement",
+          event_label: "popup",
+        });
+      }
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      button.disabled = true;
+      label.hidden = true;
+      loading.hidden = false;
+      errorEl.hidden = true;
+
+      try {
+        const response = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          body: new FormData(form),
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          localStorage.setItem("ledgerSignedUp", "true");
+          submitted = true;
+          window.gtag?.("event", "form_submitted", {
+            event_category: "conversion",
+            event_label: "popup",
+          });
+          idle.hidden = true;
+          success.hidden = false;
+        } else {
+          errorEl.textContent = form.dataset.error!;
+          errorEl.hidden = false;
+        }
+      } catch {
+        errorEl.textContent = form.dataset.connectionError!;
+        errorEl.hidden = false;
+      } finally {
+        button.disabled = false;
+        label.hidden = false;
+        loading.hidden = true;
+      }
+    });
+  }
+</script>

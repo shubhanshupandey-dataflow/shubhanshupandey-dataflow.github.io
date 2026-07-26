@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Answer engines and AI crawlers are welcome — the content is public marketing
+# material and citations back to the site are the point.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://ledgerai.backoffice.digital/sitemap-index.xml

@@ -1,0 +1,165 @@
+---
+/**
+ * The mock UI shown beside each feature. All five render into the HTML — the
+ * tab script only toggles visibility — so the sample data stays crawlable.
+ */
+import Icon from "./Icon.astro";
+import type { CollectionEntry } from "astro:content";
+import type { IconName } from "./icons-data";
+
+interface Props {
+  feature: CollectionEntry<"features">["data"];
+}
+
+const { feature } = Astro.props;
+
+/** Staggered entrance, matching the old framer-motion delays. */
+const row = (delay: number, from = "translateY(10px)") =>
+  `--row-delay: ${delay.toFixed(2)}s; --row-from: ${from};`;
+---
+
+{
+  feature.visual === "email" && (
+    <div class="p-5 space-y-2.5">
+      {feature.emails.map((email, i) => (
+        <div
+          class="visual-row bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm"
+          style={row(i * 0.18, "translateX(-15px)")}
+        >
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-[#13b5ea]/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Icon name="Mail" size={12} class="text-[#13b5ea]" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[10px] text-gray-400 truncate">{email.from}</p>
+              <p class="text-xs font-semibold text-gray-800 truncate">{email.subject}</p>
+            </div>
+            <span class="text-[10px] text-gray-400 shrink-0">{email.time}</span>
+          </div>
+          <div
+            class="visual-row mt-2 ml-10 flex items-center gap-1.5 text-[10px] font-semibold text-[#13b5ea]"
+            style={row(i * 0.18 + 0.5, "none")}
+          >
+            <Icon name="CheckCircle2" size={10} />
+            {feature.emailNote}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+{
+  feature.visual === "statements" && (
+    <div class="p-5 space-y-2.5">
+      {feature.banks.map((bank, i) => (
+        <div
+          class="visual-row flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm"
+          style={row(i * 0.15, "translateX(-15px)")}
+        >
+          <div
+            class="w-9 h-9 rounded-lg flex items-center justify-center font-black text-white text-xs shrink-0"
+            style={`background-color: ${bank.color}`}
+          >
+            {bank.name[0]}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold text-gray-800">
+              {bank.name} — {bank.client}
+            </p>
+            <p class="text-[10px] text-gray-400">
+              {bank.date} · {bank.transactions} transactions
+            </p>
+          </div>
+          <span
+            class="visual-row text-[10px] font-bold px-2 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-200"
+            style={row(i * 0.15 + 0.4, "scale(0)")}
+          >
+            {feature.bankBadge}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+{
+  feature.visual === "categorise" && (
+    <div class="p-5 space-y-2">
+      {feature.transactions.map((txn, i) => (
+        <div
+          class="visual-row flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-3 py-2.5 shadow-sm"
+          style={row(i * 0.15, "translateX(20px)")}
+        >
+          <span class="text-xs text-gray-700 flex-1 font-medium truncate">{txn.name}</span>
+          <span
+            class="visual-row text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+            style={`background-color: ${txn.color}18; color: ${txn.color}; ${row(i * 0.15 + 0.35, "scale(0)")}`}
+          >
+            {txn.category}
+          </span>
+          <span class="text-xs text-gray-500 font-mono w-16 text-right shrink-0">
+            {txn.amount}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+{
+  feature.visual === "alerts" && (
+    <div class="p-5 space-y-2.5">
+      {feature.alerts.map((alert, i) => (
+        <div
+          class="visual-row flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm"
+          style={row(i * 0.18)}
+        >
+          <div
+            class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+            style={`background-color: ${alert.color}18; color: ${alert.color}`}
+          >
+            <Icon name={alert.icon as IconName} size={14} />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold text-gray-800 truncate">{alert.company}</p>
+            <p class="text-[10px] text-gray-400">
+              {alert.bank} · {alert.label}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+{
+  feature.visual === "balance" && feature.ledger && (
+    <div class="p-5">
+      <div class="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
+        <div class="grid grid-cols-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+          {feature.ledger.columns.map((column, i) => (
+            <span class={i === 0 ? "" : "text-right"}>{column}</span>
+          ))}
+        </div>
+        {feature.ledger.rows.map((entry, i) => (
+          <div
+            class="visual-row grid grid-cols-3 text-xs px-4 py-2.5 border-b border-gray-50 last:border-0"
+            style={row(i * 0.12, "none")}
+          >
+            <span class="text-gray-700 font-medium">{entry.account}</span>
+            <span class="text-right font-mono text-gray-600">{entry.debit}</span>
+            <span class="text-right font-mono text-gray-600">{entry.credit}</span>
+          </div>
+        ))}
+      </div>
+      <div
+        class="visual-row mt-3 flex items-center justify-center gap-2 text-xs text-emerald-600 font-bold"
+        style={row(0.9, "none")}
+      >
+        <span>✓</span>
+        {feature.ledger.footer}
+      </div>
+    </div>
+  )
+}

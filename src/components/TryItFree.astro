@@ -1,0 +1,537 @@
+---
+import Icon from "./Icon.astro";
+import { getSection, fill } from "../lib/content";
+
+const section = await getSection("try-free");
+const { eyebrow, heading, subheading, uploader, supportedBanks, bullets, panelTitle, ctas } =
+  section;
+
+const [demoCta, loginCta, resultCta] = ctas;
+---
+
+<section id="try-free" class="py-24 bg-white">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="anim anim-up text-center mb-12">
+      <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-[#13b5ea] mb-3">
+        {eyebrow}
+      </p>
+      <h2 class="text-[2.2rem] font-extrabold text-slate-900 tracking-tight">{heading}</h2>
+      <p class="text-slate-400 mt-3 text-base max-w-xl mx-auto">
+        {fill(subheading ?? "", { limit: uploader?.dailyLimit ?? 3 })}
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8 items-start">
+      {/* Uploader / result card */}
+      <div
+        class="anim anim-up bg-slate-50 border border-slate-200 rounded-2xl p-7"
+        data-converter
+        data-config={JSON.stringify(uploader)}
+      >
+        <div data-converter-active>
+          {/* Email reminder chip */}
+          <div
+            data-email-chip
+            hidden
+            class="flex items-center justify-between mb-4 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm"
+          >
+            <span class="flex items-center gap-2 text-slate-600">
+              <Icon name="Mail" size={14} class="text-[#13b5ea]" />
+              Sending to <strong class="text-slate-800" data-chip-email></strong>
+            </span>
+            <button
+              type="button"
+              data-forget-email
+              title="Change email"
+              class="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+            >
+              <Icon name="X" size={14} />
+            </button>
+          </div>
+
+          {/* Drop zone */}
+          <div
+            data-dropzone
+            class="cursor-pointer border-2 border-dashed rounded-xl px-6 py-10 text-center transition-colors border-slate-300 bg-white hover:border-[#13b5ea]/60"
+          >
+            <label for="statement-file" class="sr-only">{uploader?.dropTitle}</label>
+            <input id="statement-file" type="file" accept=".pdf,application/pdf" class="hidden" />
+
+            <div data-drop-empty>
+              <Icon name="UploadCloud" size={28} class="mx-auto text-[#13b5ea] mb-3" />
+              <p class="text-sm font-semibold text-slate-700">{uploader?.dropTitle}</p>
+              <p class="text-xs text-slate-400 mt-1.5">{uploader?.dropHint}</p>
+            </div>
+
+            <div data-drop-file hidden class="flex items-center justify-center gap-2 text-slate-700">
+              <Icon name="FileText" size={18} class="text-[#13b5ea]" />
+              <span class="text-sm font-semibold" data-file-name></span>
+            </div>
+          </div>
+
+          {/* Error */}
+          <div
+            data-converter-error
+            hidden
+            class="mt-4 flex items-start gap-2 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3"
+          >
+            <Icon name="AlertCircle" size={15} class="mt-0.5 shrink-0" />
+            <span data-error-text></span>
+          </div>
+
+          {/* Success */}
+          <div
+            data-converter-success
+            hidden
+            class="mt-4 bg-emerald-50 border border-emerald-100 rounded-xl p-5"
+          >
+            <p class="flex items-center gap-2 font-bold text-emerald-800 text-sm mb-1">
+              <Icon name="CheckCircle2" size={16} />
+              <span data-success-title></span>
+            </p>
+            <p class="text-emerald-700 text-sm mb-3 leading-relaxed" data-success-body></p>
+            <div class="flex items-center gap-3">
+              <a
+                href={resultCta?.href}
+                class="inline-flex items-center gap-1.5 bg-[#13b5ea] text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-[#0e9fd2] transition-colors"
+              >
+                {resultCta?.label}
+                <Icon name="ArrowRight" size={12} />
+              </a>
+              <span class="text-xs text-emerald-600" data-success-remaining></span>
+            </div>
+          </div>
+
+          {/* CTA button */}
+          <button
+            type="button"
+            data-convert
+            disabled
+            class="mt-5 w-full bg-[#13b5ea] text-white font-semibold py-3.5 rounded-xl hover:bg-[#0e9fd2] transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <span data-label class="inline-flex items-center gap-2">
+              <Icon name="Mail" size={15} />
+              {uploader?.submitLabel}
+            </span>
+            <span data-loading class="inline-flex items-center gap-2" hidden>
+              <Icon name="Loader2" size={15} class="animate-spin" />
+              {uploader?.processingLabel}
+            </span>
+          </button>
+
+          <p class="text-xs text-slate-400 text-center mt-3">
+            <span data-remaining-label></span> ·
+            <span data-email-hint>{uploader?.emailPromptLabel}</span>
+          </p>
+        </div>
+
+        {/* Daily limit reached */}
+        <div data-converter-locked hidden class="text-center py-8">
+          <div
+            class="w-14 h-14 bg-[#13b5ea]/10 rounded-full flex items-center justify-center mx-auto mb-4"
+          >
+            <Icon name="Lock" size={22} class="text-[#13b5ea]" />
+          </div>
+          <h3 class="text-slate-900 font-bold text-lg mb-2">
+            {fill(uploader?.limitReached.heading ?? "", { limit: uploader?.dailyLimit ?? 3 })}
+          </h3>
+          <p class="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
+            {uploader?.limitReached.body}
+          </p>
+          <div class="flex items-center justify-center gap-3">
+            <a
+              href={demoCta?.href}
+              class="bg-[#13b5ea] text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-[#0e9fd2] transition-colors"
+            >
+              {demoCta?.label}
+            </a>
+            <a
+              href={loginCta?.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-sm font-semibold px-5 py-2.5 rounded-lg border border-slate-200 text-slate-700 hover:border-[#13b5ea] hover:text-[#13b5ea] transition-colors"
+            >
+              {loginCta?.label}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Supported banks */}
+      <div
+        class="anim anim-up bg-white border border-slate-200 rounded-2xl p-7 shadow-sm"
+        style="--anim-delay: 0.1s"
+      >
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-lg bg-[#13b5ea]/10 flex items-center justify-center">
+            <Icon name="Landmark" size={15} class="text-[#13b5ea]" />
+          </div>
+          <h3 class="font-bold text-slate-900 text-base">{panelTitle}</h3>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-5" data-bank-list>
+          {
+            supportedBanks.map((bank) => (
+              <span class="text-xs font-semibold px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-full text-slate-600">
+                {bank}
+              </span>
+            ))
+          }
+        </div>
+
+        <ul class="space-y-2.5 text-sm text-slate-500">
+          {
+            bullets.map((bullet) => (
+              <li class="flex items-start gap-2">
+                {bullet.tone === "warning" ? (
+                  <Icon name="AlertCircle" size={15} class="text-amber-500 mt-0.5 shrink-0" />
+                ) : (
+                  <Icon name="CheckCircle2" size={15} class="text-[#13b5ea] mt-0.5 shrink-0" />
+                )}
+                {bullet.text}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+{/* Email capture modal */}
+<div
+  data-convert-modal
+  hidden
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="convert-modal-title"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  style="background: rgba(15,23,42,0.55); backdrop-filter: blur(4px);"
+>
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
+    <button
+      type="button"
+      data-modal-close
+      aria-label="Close"
+      class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+    >
+      <Icon name="X" size={18} />
+    </button>
+
+    <div class="w-12 h-12 bg-[#13b5ea]/10 rounded-xl flex items-center justify-center mb-5">
+      <Icon name="Mail" size={22} class="text-[#13b5ea]" />
+    </div>
+
+    <h3 id="convert-modal-title" class="text-slate-900 font-bold text-xl mb-1">
+      {uploader?.modal.heading}
+    </h3>
+    <p class="text-slate-500 text-sm mb-6 leading-relaxed">{uploader?.modal.body}</p>
+
+    <label for="convert-email" class="sr-only">{uploader?.modal.placeholder}</label>
+    <input
+      id="convert-email"
+      type="email"
+      placeholder={uploader?.modal.placeholder}
+      class="w-full border border-slate-200 bg-slate-50 text-slate-900 text-sm rounded-xl px-4 py-3 placeholder-slate-400 focus:outline-none focus:border-[#13b5ea] focus:bg-white transition-all mb-2"
+    />
+
+    <p data-modal-error hidden class="text-xs text-red-500 flex items-center gap-1 mb-3">
+      <Icon name="AlertCircle" size={12} />
+      <span data-modal-error-text></span>
+    </p>
+
+    <button
+      type="button"
+      data-modal-submit
+      class="w-full bg-[#13b5ea] text-white font-semibold py-3 rounded-xl hover:bg-[#0e9fd2] transition-colors text-sm flex items-center justify-center gap-2 mt-2 cursor-pointer"
+    >
+      {uploader?.modal.submitLabel}
+      <Icon name="ArrowRight" size={15} />
+    </button>
+
+    <p class="text-xs text-slate-400 text-center mt-3">{uploader?.modal.note}</p>
+  </div>
+</div>
+
+<script>
+  interface Config {
+    dailyLimit: number;
+    maxFileSizeMb: number;
+    apiBaseUrl: string;
+    remainingLabel: string;
+    emailPromptLabel: string;
+    sendingToLabel: string;
+    changeLabel: string;
+    invalidTypeError: string;
+    tooLargeError: string;
+    genericError: string;
+    successTitle: string;
+    modal: { invalidEmail: string };
+  }
+
+  const root = document.querySelector<HTMLElement>("[data-converter]");
+  const modal = document.querySelector<HTMLElement>("[data-convert-modal]");
+
+  if (root && modal) {
+    const cfg: Config = JSON.parse(root.dataset.config!);
+
+    const USAGE_KEY = "guestPdfConversions";
+    const EMAIL_KEY = "guestEmail";
+
+    const $ = <T extends HTMLElement>(sel: string, scope: ParentNode = root) =>
+      scope.querySelector<T>(sel)!;
+
+    const active = $("[data-converter-active]");
+    const locked = $("[data-converter-locked]");
+    const dropzone = $("[data-dropzone]");
+    const fileInput = $<HTMLInputElement>("#statement-file");
+    const dropEmpty = $("[data-drop-empty]");
+    const dropFile = $("[data-drop-file]");
+    const fileName = $("[data-file-name]");
+    const errorBox = $("[data-converter-error]");
+    const errorText = $("[data-error-text]");
+    const successBox = $("[data-converter-success]");
+    const convertBtn = $<HTMLButtonElement>("[data-convert]");
+    const label = $("[data-label]", convertBtn);
+    const loading = $("[data-loading]", convertBtn);
+    const emailChip = $("[data-email-chip]");
+    const chipEmail = $("[data-chip-email]");
+    const remainingLabel = $("[data-remaining-label]");
+    const emailHint = $("[data-email-hint]");
+    const bankList = $("[data-bank-list]");
+
+    const modalInput = $<HTMLInputElement>("#convert-email", modal);
+    const modalError = $("[data-modal-error]", modal);
+    const modalErrorText = $("[data-modal-error-text]", modal);
+
+    const todayKey = () => new Date().toISOString().slice(0, 10);
+    const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+
+    const readUsage = (): number => {
+      try {
+        const raw = localStorage.getItem(USAGE_KEY);
+        if (!raw) return 0;
+        const parsed = JSON.parse(raw) as { date: string; count: number };
+        return parsed.date === todayKey() ? parsed.count : 0;
+      } catch {
+        return 0;
+      }
+    };
+    const writeUsage = (count: number) =>
+      localStorage.setItem(USAGE_KEY, JSON.stringify({ date: todayKey(), count }));
+
+    const fill = (text: string, vars: Record<string, string | number>) =>
+      text.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+
+    let file: File | null = null;
+    let usedToday = readUsage();
+    let storedEmail = localStorage.getItem(EMAIL_KEY) ?? "";
+    let processing = false;
+
+    const remaining = () => Math.max(cfg.dailyLimit - usedToday, 0);
+
+    const render = () => {
+      const left = remaining();
+      active.hidden = left <= 0;
+      locked.hidden = left > 0;
+
+      remainingLabel.textContent = fill(cfg.remainingLabel, {
+        remaining: left,
+        limit: cfg.dailyLimit,
+      });
+
+      // The chip reminds you where the *next* upload goes, so it stays hidden
+      // while a result is on screen (the original's `storedEmail && !result`).
+      emailChip.hidden = !storedEmail || !successBox.hidden;
+      chipEmail.textContent = storedEmail;
+
+      if (storedEmail) {
+        emailHint.innerHTML = `${cfg.sendingToLabel} <strong></strong> · <button type="button" data-forget-email class="underline cursor-pointer">${cfg.changeLabel}</button>`;
+        emailHint.querySelector("strong")!.textContent = storedEmail;
+      } else {
+        emailHint.textContent = cfg.emailPromptLabel;
+      }
+
+      convertBtn.disabled = !file || processing;
+    };
+
+    const showError = (message: string) => {
+      errorText.textContent = message;
+      errorBox.hidden = false;
+    };
+    const clearError = () => {
+      errorBox.hidden = true;
+    };
+
+    const selectFile = (selected: File | null) => {
+      clearError();
+      successBox.hidden = true;
+      if (!selected) return;
+
+      if (!selected.name.toLowerCase().endsWith(".pdf")) {
+        showError(cfg.invalidTypeError);
+        return;
+      }
+      if (selected.size > cfg.maxFileSizeMb * 1024 * 1024) {
+        showError(cfg.tooLargeError);
+        return;
+      }
+
+      file = selected;
+      fileName.textContent = selected.name;
+      dropEmpty.hidden = true;
+      dropFile.hidden = false;
+      render();
+    };
+
+    dropzone.addEventListener("click", (e) => {
+      // `fileInput.click()` re-dispatches a bubbling click; ignore it so the
+      // picker doesn't reopen in a loop.
+      if (e.target === fileInput) return;
+      fileInput.click();
+    });
+    fileInput.addEventListener("change", () => selectFile(fileInput.files?.[0] ?? null));
+
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("border-[#13b5ea]", "bg-[#13b5ea]/5");
+      dropzone.classList.remove("border-slate-300", "bg-white");
+    });
+    const resetDragStyles = () => {
+      dropzone.classList.remove("border-[#13b5ea]", "bg-[#13b5ea]/5");
+      dropzone.classList.add("border-slate-300", "bg-white");
+    };
+    dropzone.addEventListener("dragleave", resetDragStyles);
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      resetDragStyles();
+      selectFile((e as DragEvent).dataTransfer?.files?.[0] ?? null);
+    });
+
+    // "Change email" appears both in the chip and the footnote.
+    root.addEventListener("click", (e) => {
+      if (!(e.target as HTMLElement).closest("[data-forget-email]")) return;
+      storedEmail = "";
+      localStorage.removeItem(EMAIL_KEY);
+      render();
+    });
+
+    const openModal = () => {
+      modalInput.value = storedEmail;
+      modalError.hidden = true;
+      modal.hidden = false;
+      setTimeout(() => modalInput.focus(), 50);
+    };
+    const closeModal = () => {
+      modal.hidden = true;
+    };
+
+    $("[data-modal-close]", modal).addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+    modalInput.addEventListener("input", () => {
+      modalError.hidden = true;
+    });
+    modalInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") $("[data-modal-submit]", modal).click();
+    });
+
+    $("[data-modal-submit]", modal).addEventListener("click", () => {
+      const value = modalInput.value.trim().toLowerCase();
+      if (!isValidEmail(value)) {
+        modalErrorText.textContent = cfg.modal.invalidEmail;
+        modalError.hidden = false;
+        return;
+      }
+      localStorage.setItem(EMAIL_KEY, value);
+      storedEmail = value;
+      closeModal();
+      render();
+      void convert(value);
+    });
+
+    convertBtn.addEventListener("click", () => {
+      if (!file || remaining() <= 0) return;
+      if (storedEmail && isValidEmail(storedEmail)) void convert(storedEmail);
+      else openModal();
+    });
+
+    async function convert(email: string) {
+      if (!file || processing) return;
+      processing = true;
+      clearError();
+      successBox.hidden = true;
+      convertBtn.disabled = true;
+      label.hidden = true;
+      loading.hidden = false;
+
+      try {
+        const body = new FormData();
+        body.append("file", file);
+        body.append("email", email);
+
+        const response = await fetch(`${cfg.apiBaseUrl}/public/lead-magnet/process`, {
+          method: "POST",
+          body,
+        });
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          if (response.status === 429) {
+            usedToday = cfg.dailyLimit;
+            writeUsage(cfg.dailyLimit);
+          }
+          throw new Error(data?.detail || cfg.genericError);
+        }
+
+        usedToday = cfg.dailyLimit - Math.max(data.remaining_today ?? 0, 0);
+        writeUsage(usedToday);
+
+        $("[data-success-title]").textContent = `${cfg.successTitle} ${data.sent_to}`;
+        $("[data-success-body]").textContent =
+          `${data.detected_bank ? data.detected_bank + " · " : ""}${data.transaction_count} transactions extracted and categorized. Check your inbox — the email also includes a demo invite.`;
+
+        const left = data.remaining_today ?? 0;
+        $("[data-success-remaining]").textContent =
+          left > 0 ? `${left} free conversion${left !== 1 ? "s" : ""} left today` : "";
+
+        successBox.hidden = false;
+        file = null;
+        fileInput.value = "";
+        dropEmpty.hidden = false;
+        dropFile.hidden = true;
+      } catch (err) {
+        showError(err instanceof Error ? err.message : cfg.genericError);
+      } finally {
+        processing = false;
+        label.hidden = false;
+        loading.hidden = true;
+        render();
+      }
+    }
+
+    // The static bank list is the fallback; refresh it from the API if reachable.
+    fetch(`${cfg.apiBaseUrl}/public/lead-magnet/info`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((info) => {
+        if (!info) return;
+        if (Array.isArray(info.supported_banks) && info.supported_banks.length > 0) {
+          bankList.replaceChildren(
+            ...info.supported_banks.map((bank: string) => {
+              const chip = document.createElement("span");
+              chip.className =
+                "text-xs font-semibold px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-full text-slate-600";
+              chip.textContent = bank;
+              return chip;
+            })
+          );
+        }
+        usedToday = Math.max(usedToday, info.used_today ?? 0);
+        render();
+      })
+      .catch(() => {});
+
+    render();
+  }
+</script>

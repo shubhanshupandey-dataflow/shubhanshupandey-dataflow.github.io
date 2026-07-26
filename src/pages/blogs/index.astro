@@ -1,0 +1,292 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TopBar from "../../components/TopBar.astro";
+import Nav from "../../components/Nav.astro";
+import Footer from "../../components/Footer.astro";
+import Icon from "../../components/Icon.astro";
+import { formatDate, getPosts, getSection, getSite } from "../../lib/content";
+import { blogIndex, breadcrumbs } from "../../lib/schema";
+
+const brand = await getSite("brand");
+const section = await getSection("blog-index");
+const cta = await getSection("blog-cta");
+const posts = await getPosts();
+
+const categories = [
+  section.allCategoriesLabel ?? "All",
+  ...new Set(posts.map((post) => post.data.category)),
+];
+
+/**
+ * The React list searched titles, excerpts *and* body text. Each card carries a
+ * pre-lowercased haystack so the same search works without shipping the posts
+ * twice or needing a runtime fetch.
+ */
+const haystack = (post: (typeof posts)[number]) =>
+  [post.data.title, post.data.excerpt, post.data.category, post.body ?? ""]
+    .join(" ")
+    .toLowerCase();
+
+const jsonLd = [
+  blogIndex(
+    brand,
+    { name: section.pageTitle!, description: section.pageDescription! },
+    posts.map((post) => ({ id: post.id, data: post.data }))
+  ),
+  breadcrumbs(brand, [
+    { name: "Home", item: "/" },
+    { name: "Blogs", item: "/blogs" },
+  ]),
+];
+---
+
+<BaseLayout
+  title={section.pageTitle!}
+  description={section.pageDescription}
+  canonical="/blogs"
+  ogTitle={section.pageTitle}
+  ogDescription="Explore expert financial guidance, compliance advice, and bookkeeping strategies for UK businesses."
+  jsonLd={jsonLd}
+  bodyClass="bg-slate-50"
+>
+  <TopBar />
+  <Nav />
+
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    {/* Breadcrumbs */}
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-10">
+      <a href="/" class="hover:text-[#13b5ea] flex items-center gap-1 transition-colors">
+        <Icon name="Home" size={12} /> Home
+      </a>
+      <Icon name="ChevronRight" size={10} class="text-slate-400" />
+      <span class="text-slate-800" aria-current="page">Blogs</span>
+    </nav>
+
+    {/* Hero */}
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <div
+        class="anim anim-up inline-flex items-center gap-2 bg-[#13b5ea]/10 text-[#13b5ea] text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-widest"
+      >
+        <Icon name="Sparkles" size={12} />
+        {section.badge}
+      </div>
+
+      <h1
+        class="anim anim-up text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight mb-5 leading-tight"
+        style="--anim-delay: 0.1s"
+      >
+        {section.headline?.before}
+        <span class="text-[#13b5ea]">{section.headline?.accent}</span>
+        {section.headline?.after}
+      </h1>
+
+      <p
+        class="anim anim-up text-base sm:text-lg text-slate-600 leading-relaxed"
+        style="--anim-delay: 0.2s"
+      >
+        {section.subheading}
+      </p>
+    </div>
+
+    {/* Search & filter */}
+    <div
+      data-blog-filters
+      class="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"
+    >
+      <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
+        {
+          categories.map((category, i) => (
+            <button
+              type="button"
+              data-category={category}
+              aria-pressed={i === 0 ? "true" : "false"}
+              class="text-xs font-semibold px-4 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 aria-pressed:bg-[#13b5ea] aria-pressed:text-white aria-pressed:shadow-sm aria-pressed:shadow-[#13b5ea]/25"
+            >
+              {category}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="relative w-full md:w-80">
+        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+          <Icon name="Search" size={16} />
+        </span>
+        <label for="blog-search" class="sr-only">{section.searchPlaceholder}</label>
+        <input
+          id="blog-search"
+          type="search"
+          data-blog-search
+          placeholder={section.searchPlaceholder}
+          class="w-full bg-slate-50 text-slate-800 text-sm pl-11 pr-4 py-2.5 rounded-xl border border-slate-100 focus:outline-none focus:border-[#13b5ea] focus:bg-white transition-all placeholder-slate-400"
+        />
+      </div>
+    </div>
+
+    {/* Grid: every post is rendered server-side; filtering only hides cards. */}
+    <div data-blog-grid class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+      {
+        posts.map((post, i) => (
+          <article
+            data-post
+            data-category={post.data.category}
+            data-search={haystack(post)}
+            class="anim anim-up group flex flex-col bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-100 hover:-translate-y-1 transition-all overflow-hidden"
+            style={`--anim-delay: ${(i * 0.05).toFixed(2)}s`}
+          >
+            <a
+              href={`/blogs/${post.id}`}
+              class="block aspect-video overflow-hidden bg-slate-100 relative"
+            >
+              <img
+                src={post.data.coverImage}
+                alt={post.data.title}
+                width="640"
+                height="360"
+                loading="lazy"
+                decoding="async"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div class="absolute top-4 left-4">
+                <span class="bg-slate-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                  {post.data.category}
+                </span>
+              </div>
+            </a>
+
+            <div class="flex-1 p-6 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-4 text-slate-400 text-[11px] font-medium mb-3">
+                  <span class="flex items-center gap-1">
+                    <Icon name="Calendar" size={12} />
+                    <time datetime={post.data.date}>{formatDate(post.data.date)}</time>
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <Icon name="Clock" size={12} />
+                    {post.data.readingTime}
+                  </span>
+                </div>
+
+                <h2 class="text-slate-900 font-bold text-lg leading-snug mb-3 group-hover:text-[#13b5ea] transition-colors line-clamp-2">
+                  <a href={`/blogs/${post.id}`}>{post.data.title}</a>
+                </h2>
+
+                <p class="text-slate-500 text-sm leading-relaxed mb-6 line-clamp-3">
+                  {post.data.excerpt}
+                </p>
+              </div>
+
+              <div>
+                <a
+                  href={`/blogs/${post.id}`}
+                  class="inline-flex items-center gap-1.5 text-xs font-bold text-[#13b5ea] group-hover:text-[#0e9fd2] transition-colors"
+                >
+                  Read More
+                  <Icon name="ArrowRight" size={14} class="group-hover:translate-x-0.5 transition-transform" />
+                </a>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    <div
+      data-blog-empty
+      hidden
+      class="text-center py-20 bg-white rounded-2xl border border-slate-100 shadow-sm mb-20"
+    >
+      <p class="text-slate-500 text-base mb-2">{section.emptyState?.message}</p>
+      <button
+        type="button"
+        data-blog-reset
+        class="text-[#13b5ea] font-semibold text-sm hover:underline cursor-pointer"
+      >
+        {section.emptyState?.action}
+      </button>
+    </div>
+
+    {/* CTA */}
+    <section
+      class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-white rounded-3xl p-8 sm:p-12 relative overflow-hidden shadow-xl mb-12"
+    >
+      <div class="absolute right-0 top-0 w-80 h-80 bg-[#13b5ea]/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute left-1/3 bottom-0 w-60 h-60 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative max-w-2xl mx-auto text-center">
+        <span class="text-[#13b5ea] text-xs font-bold uppercase tracking-wider block mb-4">
+          {cta.eyebrow}
+        </span>
+        <h2 class="text-3xl font-bold mb-4 tracking-tight leading-tight">{cta.heading}</h2>
+        <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-8">{cta.subheading}</p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a
+            href={cta.ctas[0]?.href}
+            class="w-full sm:w-auto bg-[#13b5ea] hover:bg-[#0e9fd2] text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-[#13b5ea]/20 flex items-center justify-center gap-2"
+          >
+            {cta.ctas[0]?.label}
+            <Icon name="ArrowRight" size={16} />
+          </a>
+          <a
+            href={cta.ctas[1]?.href}
+            class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-8 py-3.5 rounded-xl transition-all border border-slate-700 flex items-center justify-center"
+          >
+            {cta.ctas[1]?.label}
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  const filters = document.querySelector<HTMLElement>("[data-blog-filters]");
+  const grid = document.querySelector<HTMLElement>("[data-blog-grid]");
+  const empty = document.querySelector<HTMLElement>("[data-blog-empty]");
+
+  if (filters && grid && empty) {
+    const search = filters.querySelector<HTMLInputElement>("[data-blog-search]")!;
+    const buttons = [...filters.querySelectorAll<HTMLButtonElement>("[data-category]")];
+    const cards = [...grid.querySelectorAll<HTMLElement>("[data-post]")];
+    const allLabel = buttons[0]?.dataset.category ?? "All";
+
+    let category = allLabel;
+
+    const apply = () => {
+      const query = search.value.trim().toLowerCase();
+      let visible = 0;
+
+      for (const card of cards) {
+        const matchesCategory = category === allLabel || card.dataset.category === category;
+        const matchesSearch = !query || (card.dataset.search ?? "").includes(query);
+        const show = matchesCategory && matchesSearch;
+        card.hidden = !show;
+        if (show) visible++;
+      }
+
+      empty.hidden = visible > 0;
+      grid.hidden = visible === 0;
+    };
+
+    buttons.forEach((button) =>
+      button.addEventListener("click", () => {
+        category = button.dataset.category!;
+        buttons.forEach((b) =>
+          b.setAttribute("aria-pressed", b === button ? "true" : "false")
+        );
+        apply();
+      })
+    );
+
+    search.addEventListener("input", apply);
+
+    empty.querySelector("[data-blog-reset]")!.addEventListener("click", () => {
+      search.value = "";
+      category = allLabel;
+      buttons.forEach((b, i) => b.setAttribute("aria-pressed", i === 0 ? "true" : "false"));
+      apply();
+    });
+  }
+</script>

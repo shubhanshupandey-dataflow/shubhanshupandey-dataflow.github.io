@@ -1,0 +1,74 @@
+---
+import { getSection } from "../lib/content";
+
+const section = await getSection("cookie-consent");
+const [decline, accept] = section.ctas;
+
+// The copy carries a `{links}` token so the policy links stay editable in markdown.
+const [before, after] = (section.subheading ?? "").split("{links}");
+---
+
+<div
+  data-cookie-consent
+  hidden
+  class="fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 sm:p-6 shadow-2xl z-50"
+>
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="flex-1">
+        <h3 class="text-lg font-semibold mb-2">{section.heading}</h3>
+        <p class="text-sm text-gray-300">
+          {before}
+          {
+            section.links.map((link, i) => (
+              <>
+                {i > 0 && " and "}
+                <a href={link.href} class="underline hover:text-blue-400">
+                  {link.label}
+                </a>
+              </>
+            ))
+          }
+          {after}
+        </p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+        <button
+          type="button"
+          data-cookie-decline
+          class="px-6 py-2 text-sm font-medium rounded-lg border border-gray-600 hover:border-gray-400 transition-colors whitespace-nowrap cursor-pointer"
+        >
+          {decline?.label}
+        </button>
+        <button
+          type="button"
+          data-cookie-accept
+          class="px-6 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
+        >
+          {accept?.label}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const banner = document.querySelector<HTMLElement>("[data-cookie-consent]");
+
+  if (banner && !localStorage.getItem("cookieConsent")) {
+    banner.hidden = false;
+
+    const dismiss = (choice: string) => {
+      localStorage.setItem("cookieConsent", choice);
+      banner.hidden = true;
+    };
+
+    banner
+      .querySelector("[data-cookie-accept]")
+      ?.addEventListener("click", () => dismiss("accepted"));
+    banner
+      .querySelector("[data-cookie-decline]")
+      ?.addEventListener("click", () => dismiss("declined"));
+  }
+</script>

@@ -1,0 +1,61 @@
+---
+eyebrow: "Try it free — no signup"
+heading: "Convert a bank statement PDF to Excel"
+subheading: "Upload a PDF bank statement and we'll email you a clean Excel file with every transaction extracted and AI-predicted spending categories — up to {limit} per day, completely free."
+panelTitle: "Supported banks"
+uploader:
+  dailyLimit: 3
+  maxFileSizeMb: 15
+  apiBaseUrl: "https://la.backoffice.digital/api/v1"
+  dropTitle: "Drop your PDF statement here, or click to browse"
+  dropHint: "Digital (text-based) PDFs only — scanned statements aren't supported yet"
+  submitLabel: "Email me the Excel"
+  processingLabel: "Extracting & sending…"
+  remainingLabel: "{remaining} of {limit} free conversions left today"
+  emailPromptLabel: "we'll ask for your email next"
+  sendingToLabel: "sending to"
+  changeLabel: "change"
+  invalidTypeError: "Only PDF statements are supported in the free converter."
+  tooLargeError: "File too large. Maximum size is 15 MB."
+  genericError: "Failed to process the statement. Please try again."
+  successTitle: "Excel sent to"
+  modal:
+    heading: "Where should we send it?"
+    body: "We'll email you the Excel file the moment it's ready. We save your address so you won't need to enter it again."
+    placeholder: "your@email.com"
+    submitLabel: "Send my Excel"
+    invalidEmail: "Please enter a valid email address."
+    note: "No spam — just your statement. We'll include a demo invite too."
+  limitReached:
+    heading: "You've used today's {limit} free conversions"
+    body: "Come back tomorrow — or get unlimited statement processing, trial balances and automated Gmail intake for your whole firm."
+supportedBanks:
+  - "HSBC"
+  - "HSBC Commercial Card"
+  - "Barclays"
+  - "NatWest"
+  - "Lloyds"
+  - "Monzo"
+  - "Starling"
+  - "Metro Bank"
+  - "Virgin Money"
+  - "American Express"
+  - "ANNA"
+bullets:
+  - text: "Excel emailed with every transaction and AI-predicted spending category"
+  - text: "Date, type, description, debit, credit and balance preserved"
+  - text: "We save your email locally — no need to enter it again"
+  - text: "Digital PDF statements only — scanned copies coming soon"
+    tone: "warning"
+ctas:
+  - label: "Book a Demo"
+    href: "#book-demo"
+    style: "primary"
+  - label: "Login"
+    href: "https://la.backoffice.digital/login"
+    style: "secondary"
+    external: true
+  - label: "Book a demo"
+    href: "#book-demo"
+    style: "ghost"
+---

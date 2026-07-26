@@ -1,0 +1,31 @@
+---
+import Icon from "./Icon.astro";
+import { getSection } from "../lib/content";
+
+const { announcement } = await getSection("topbar");
+---
+
+{
+  announcement && (
+    <div class="sticky top-0 z-[60] bg-[#0b1220] text-white">
+      <div class="max-w-7xl mx-auto px-6 h-10 flex items-center justify-center text-sm">
+        <button
+          type="button"
+          data-open-popup
+          data-event="banner_click"
+          class="flex items-center gap-2 font-medium hover:opacity-90 transition-opacity cursor-pointer"
+        >
+          <Icon name="Sparkles" size={13} class="text-[#13b5ea]" />
+          <span>
+            {announcement.before}{" "}
+            <span class="text-[#13b5ea] font-semibold">{announcement.highlight}</span>{" "}
+            {announcement.after}
+          </span>
+          <span class="underline underline-offset-2 hidden sm:inline">
+            {announcement.linkLabel}
+          </span>
+        </button>
+      </div>
+    </div>
+  )
+}

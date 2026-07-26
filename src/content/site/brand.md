@@ -1,0 +1,17 @@
+---
+name: "Ledger AI"
+legalName: "Ledger AI"
+logo: "/Logo.png"
+logoAlt: "Ledger AI"
+favicon: "/favicon.svg"
+ogImage: "/og-image.png"
+url: "https://ledgerai.backoffice.digital"
+appUrl: "https://la.backoffice.digital/"
+defaultTitle: "Ledger AI | AI-Powered Bookkeeping & Accounting Automation"
+defaultDescription: "AI-powered bookkeeping and accounting automation for modern accounting firms."
+applicationDescription: "AI-powered bookkeeping and accounting automation software that extracts transaction details from invoices, receipts, and bank statements to generate Trial Balances."
+formAccessKey: "80f3160a-fb9c-46c6-afc6-577479cd4251"
+gtmId: "GTM-NR65TM3J"
+googleAdsId: "AW-18022362771"
+bookingConversionLabel: "AW-18022362771/JEoACMmEpsUcEJPd3ZFD"
+---

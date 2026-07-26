@@ -1,0 +1,234 @@
+---
+import type { GetStaticPaths } from "astro";
+import { render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TopBar from "../../components/TopBar.astro";
+import Nav from "../../components/Nav.astro";
+import Footer from "../../components/Footer.astro";
+import Icon from "../../components/Icon.astro";
+import { formatDate, getPosts, getSection, getSite } from "../../lib/content";
+import { blogPosting, breadcrumbs } from "../../lib/schema";
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const posts = await getPosts();
+  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+};
+
+const brand = await getSite("brand");
+const cta = await getSection("blog-post-cta");
+const { entry } = Astro.props;
+const post = entry.data;
+
+// Markdown is compiled to HTML here, at build time — the React app parsed it in
+// the browser on every visit, so crawlers saw an empty article element.
+const { Content } = await render(entry);
+
+const posts = await getPosts();
+const index = posts.findIndex((p) => p.id === entry.id);
+const prevPost = index > 0 ? posts[index - 1] : null;
+const nextPost = index < posts.length - 1 ? posts[index + 1] : null;
+const relatedPosts = posts.filter((p) => post.related.includes(p.id));
+
+const jsonLd = [
+  blogPosting(brand, post, entry.id),
+  breadcrumbs(brand, [
+    { name: "Home", item: "/" },
+    { name: "Blogs", item: "/blogs" },
+    { name: post.title, item: `/blogs/${entry.id}` },
+  ]),
+];
+---
+
+<BaseLayout
+  title={post.seo.title}
+  description={post.seo.description}
+  canonical={`/blogs/${entry.id}`}
+  ogTitle={post.seo.ogTitle}
+  ogDescription={post.seo.ogDescription}
+  ogImage={post.coverImage}
+  ogType="article"
+  jsonLd={jsonLd}
+>
+  <TopBar />
+  <Nav />
+
+  <div class="bg-slate-50 border-b border-slate-100">
+    <div class="max-w-4xl mx-auto px-6 py-6">
+      <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs font-medium text-slate-500">
+        <a href="/" class="hover:text-[#13b5ea] flex items-center gap-1 transition-colors">
+          <Icon name="Home" size={12} /> Home
+        </a>
+        <Icon name="ChevronRight" size={10} class="text-slate-400" />
+        <a href="/blogs" class="hover:text-[#13b5ea] transition-colors">Blogs</a>
+        <Icon name="ChevronRight" size={10} class="text-slate-400" />
+        <span class="text-slate-800 line-clamp-1" aria-current="page">{post.title}</span>
+      </nav>
+    </div>
+  </div>
+
+  <main>
+    <article class="max-w-4xl mx-auto px-6 pt-12 pb-20">
+      <header class="mb-10 text-left">
+        <span
+          class="bg-[#13b5ea]/10 text-[#13b5ea] text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider inline-block mb-5"
+        >
+          {post.category}
+        </span>
+        <h1
+          class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight tracking-tight mb-6"
+        >
+          {post.title}
+        </h1>
+
+        <div
+          class="flex flex-wrap items-center gap-y-3 gap-x-6 text-slate-500 text-sm border-y border-slate-100 py-4"
+        >
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600">
+              <Icon name="User" size={14} />
+            </span>
+            <span class="font-semibold text-slate-700">{post.author}</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <Icon name="Calendar" size={14} />
+            <time datetime={post.date}>{formatDate(post.date)}</time>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <Icon name="Clock" size={14} />
+            <span>{post.readingTime} reading time</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Featured image */}
+      <div
+        class="aspect-[21/9] rounded-3xl overflow-hidden mb-12 shadow-sm border border-slate-100 bg-slate-100"
+      >
+        <img
+          src={post.coverImage}
+          alt={post.title}
+          width="1200"
+          height="514"
+          decoding="async"
+          class="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Article body */}
+      <div class="prose-content max-w-none select-text">
+        <Content />
+      </div>
+
+      {/* Pagination */}
+      <nav
+        aria-label="More articles"
+        class="border-t border-slate-100 pt-10 mt-16 flex flex-col sm:flex-row items-center justify-between gap-6"
+      >
+        {
+          prevPost ? (
+            <a
+              href={`/blogs/${prevPost.id}`}
+              rel="prev"
+              class="w-full sm:w-1/2 p-5 rounded-2xl border border-slate-100 hover:border-[#13b5ea] hover:shadow-lg hover:shadow-slate-100 transition-all flex flex-col items-start gap-1 group"
+            >
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                <Icon name="ArrowLeft" size={10} /> Previous Article
+              </span>
+              <span class="text-slate-800 font-bold text-sm sm:text-base leading-snug group-hover:text-[#13b5ea] transition-colors line-clamp-1">
+                {prevPost.data.title}
+              </span>
+            </a>
+          ) : (
+            <div class="hidden sm:block sm:w-1/2" />
+          )
+        }
+
+        {
+          nextPost ? (
+            <a
+              href={`/blogs/${nextPost.id}`}
+              rel="next"
+              class="w-full sm:w-1/2 p-5 rounded-2xl border border-slate-100 hover:border-[#13b5ea] hover:shadow-lg hover:shadow-slate-100 transition-all flex flex-col items-end gap-1 group text-right"
+            >
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                Next Article <Icon name="ArrowRight" size={10} />
+              </span>
+              <span class="text-slate-800 font-bold text-sm sm:text-base leading-snug group-hover:text-[#13b5ea] transition-colors line-clamp-1">
+                {nextPost.data.title}
+              </span>
+            </a>
+          ) : (
+            <div class="hidden sm:block sm:w-1/2" />
+          )
+        }
+      </nav>
+    </article>
+
+    {/* Related */}
+    {
+      relatedPosts.length > 0 && (
+        <section class="bg-slate-50 border-t border-slate-100 py-16">
+          <div class="max-w-4xl mx-auto px-6">
+            <h2 class="text-2xl font-bold text-slate-900 mb-8 tracking-tight">Related Articles</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              {relatedPosts.map((related) => (
+                <article class="group flex flex-col bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
+                  <a
+                    href={`/blogs/${related.id}`}
+                    class="block aspect-[16/10] overflow-hidden bg-slate-100"
+                  >
+                    <img
+                      src={related.data.coverImage}
+                      alt={related.data.title}
+                      width="640"
+                      height="400"
+                      loading="lazy"
+                      decoding="async"
+                      class="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+                    />
+                  </a>
+                  <div class="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <span class="text-[10px] font-bold text-[#13b5ea] uppercase tracking-wider block mb-2">
+                        {related.data.category}
+                      </span>
+                      <h3 class="text-slate-900 font-bold text-base leading-snug mb-3 group-hover:text-[#13b5ea] transition-colors line-clamp-2">
+                        <a href={`/blogs/${related.id}`}>{related.data.title}</a>
+                      </h3>
+                    </div>
+                    <a
+                      href={`/blogs/${related.id}`}
+                      class="inline-flex items-center gap-1 text-xs font-bold text-[#13b5ea] hover:text-[#0e9fd2] mt-2"
+                    >
+                      Read Article <Icon name="ArrowRight" size={12} />
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    {/* Booking CTA */}
+    <section class="bg-white border-t border-slate-100 py-16 text-center">
+      <div class="max-w-2xl mx-auto px-6">
+        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 tracking-tight">
+          {cta.heading}
+        </h2>
+        <p class="text-slate-600 mb-8 text-sm sm:text-base leading-relaxed">{cta.subheading}</p>
+        <a
+          href={cta.ctas[0]?.href}
+          class="inline-flex items-center justify-center gap-2 bg-[#13b5ea] text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-[#0e9fd2] transition-colors text-base shadow-lg shadow-[#13b5ea]/20"
+        >
+          {cta.ctas[0]?.label}
+          <Icon name="ArrowRight" size={18} />
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>

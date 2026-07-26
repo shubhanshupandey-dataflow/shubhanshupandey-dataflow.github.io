@@ -1,0 +1,74 @@
+---
+import Icon from "./Icon.astro";
+import { getSite } from "../lib/content";
+
+const brand = await getSite("brand");
+const nav = await getSite("navigation");
+---
+
+<nav
+  class="anim anim-down sticky top-10 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-100"
+>
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
+      <img
+        src={brand.logo}
+        alt={brand.logoAlt}
+        width="160"
+        height="40"
+        class="w-24 sm:w-32 md:w-36 lg:w-40 h-auto"
+      />
+    </a>
+
+    <div class="hidden md:flex items-center gap-8 text-sm text-slate-500 font-medium">
+      {
+        nav.links.map((link) => (
+          <a href={link.href} class="hover:text-slate-900 transition-colors">
+            {link.label}
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="flex items-center gap-3">
+      {
+        nav.login && (
+          <a
+            href={nav.login.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center gap-2 text-slate-700 text-sm font-semibold px-5 py-2.5 rounded-lg border border-slate-200 hover:border-[#13b5ea] hover:text-[#13b5ea] transition-colors"
+          >
+            <Icon name="LogIn" size={16} />
+            {nav.login.label}
+          </a>
+        )
+      }
+      {
+        nav.cta && (
+          <a
+            href={nav.cta.href}
+            data-event="book_demo_clicked"
+            data-event-label={nav.cta.event}
+            class="bg-[#13b5ea] text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-[#0e9fd2] transition-colors cursor-pointer"
+          >
+            {nav.cta.label}
+          </a>
+        )
+      }
+    </div>
+  </div>
+</nav>
+
+<script>
+  // The nav CTA is a real link to /#book-demo, so it works without JS and from
+  // any page. This only adds the analytics event the React onClick used to send.
+  document.querySelectorAll<HTMLElement>("[data-event='book_demo_clicked']").forEach((el) => {
+    el.addEventListener("click", () => {
+      window.gtag?.("event", "book_demo_clicked", {
+        event_category: "engagement",
+        event_label: el.dataset.eventLabel ?? "nav",
+      });
+    });
+  });
+</script>

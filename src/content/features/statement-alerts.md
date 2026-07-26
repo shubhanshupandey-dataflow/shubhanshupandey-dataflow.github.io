@@ -1,0 +1,28 @@
+---
+order: 5
+title: "Statement Alerts"
+description: "The moment a client company sends a statement, your firm is alerted. Know instantly which statements have arrived, which are pending, and which need attention."
+icon: "Bell"
+visual: "alerts"
+alerts:
+  - company: "Meridian Logistics Ltd"
+    bank: "HSBC"
+    label: "Statement processed"
+    color: "#10b981"
+    icon: "CheckCircle2"
+  - company: "Thornton & Sons Ltd"
+    bank: "Barclays"
+    label: "Statement processed"
+    color: "#10b981"
+    icon: "CheckCircle2"
+  - company: "Apex Property Group"
+    bank: "NatWest"
+    label: "Processing now"
+    color: "#f59e0b"
+    icon: "AlertCircle"
+  - company: "Greenfield Retail Ltd"
+    bank: "Lloyds"
+    label: "Awaiting statement"
+    color: "#94a3b8"
+    icon: "Clock"
+---

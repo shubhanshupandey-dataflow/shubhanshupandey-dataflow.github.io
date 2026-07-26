@@ -1,0 +1,67 @@
+---
+/**
+ * The original site's 2-second white splash overlay.
+ *
+ * NOT mounted by default. On the React app the delay was hidden by the time
+ * the bundle booted and rendered; on a prerendered page the HTML is already
+ * painted, so the overlay would blank out a page that is otherwise visible
+ * immediately — directly hurting LCP, which is a ranking signal and the main
+ * reason for this rewrite.
+ *
+ * To restore it, import this into `src/pages/index.astro` and render <Loader />
+ * as the first child of the layout.
+ */
+interface Props {
+  /** Milliseconds before the overlay fades out. */
+  duration?: number;
+}
+
+const { duration = 2000 } = Astro.props;
+---
+
+<div class="loader-overlay" data-loader data-duration={duration}>
+  <div class="loader-pulse"></div>
+</div>
+
+<style>
+  .loader-overlay {
+    position: fixed;
+    inset: 0;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+  }
+
+  .loader-pulse {
+    width: 50px;
+    height: 50px;
+    background: #3b82f6;
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+      opacity: 1;
+    }
+    50% {
+      box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
+      opacity: 0.8;
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  const loader = document.querySelector<HTMLElement>("[data-loader]");
+  if (loader) {
+    setTimeout(() => loader.remove(), Number(loader.dataset.duration ?? 2000));
+  }
+</script>

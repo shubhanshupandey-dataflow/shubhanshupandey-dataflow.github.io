@@ -1,0 +1,50 @@
+---
+import Icon from "./Icon.astro";
+import { getOrdered, getSection } from "../lib/content";
+import type { IconName } from "./icons-data";
+
+const section = await getSection("how-it-works");
+const steps = await getOrdered("steps");
+---
+
+<section id="how-it-works" class="py-24 max-w-6xl mx-auto px-6">
+  <div class="anim anim-up text-center mb-14">
+    <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-[#13b5ea] mb-3">
+      {section.eyebrow}
+    </p>
+    <h2 class="text-[2.2rem] font-extrabold text-slate-900 tracking-tight">
+      {section.heading}
+    </h2>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+    <div
+      class="hidden md:block absolute top-10 left-[calc(33%+24px)] right-[calc(33%+24px)] h-px bg-slate-200 z-0"
+    >
+    </div>
+
+    {
+      steps.map((step, i) => (
+        <div
+          class="anim anim-up relative bg-white border border-slate-100 rounded-2xl p-7 shadow-sm hover:shadow-md hover:border-slate-200 transition-all group z-10"
+          style={`--anim-delay: ${i * 0.13}s`}
+        >
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-11 h-11 rounded-xl bg-[#13b5ea]/10 flex items-center justify-center group-hover:bg-[#13b5ea] transition-colors">
+              <Icon
+                name={step.data.icon as IconName}
+                size={20}
+                class="text-[#13b5ea] group-hover:text-white transition-colors"
+              />
+            </div>
+            <span class="text-4xl font-extrabold text-[#13b5ea] select-none font-mono">
+              {step.data.number}
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-base mb-2">{step.data.title}</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">{step.data.description}</p>
+        </div>
+      ))
+    }
+  </div>
+</section>

@@ -1,0 +1,35 @@
+---
+import { getSite } from "../lib/content";
+
+const brand = await getSite("brand");
+const footer = await getSite("footer");
+---
+
+<footer class="bg-white border-t border-slate-100 py-8">
+  <div
+    class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4"
+  >
+    <a href="/" class="flex items-center gap-2 hover:opacity-90 transition-opacity">
+      <img
+        src={brand.logo}
+        alt={brand.logoAlt}
+        width="160"
+        height="40"
+        loading="lazy"
+        class="w-24 sm:w-32 md:w-36 lg:w-40 h-auto"
+      />
+    </a>
+
+    <p class="text-slate-400 text-xs">{footer.copyright}</p>
+
+    <div class="flex items-center gap-6 text-xs text-slate-400">
+      {
+        footer.links.map((link) => (
+          <a href={link.href} class="hover:text-slate-600 transition-colors">
+            {link.label}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</footer>

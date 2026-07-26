@@ -1,0 +1,185 @@
+---
+import Icon from "./Icon.astro";
+import FeatureVisual from "./FeatureVisual.astro";
+import { getOrdered, getSection } from "../lib/content";
+import type { IconName } from "./icons-data";
+
+const section = await getSection("features");
+const features = await getOrdered("features");
+
+/** Milliseconds each tab stays active — matches the old setInterval. */
+const ROTATE_MS = 3375;
+---
+
+<section id="features" class="bg-slate-50 border-y border-slate-100 py-24">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="anim anim-up text-center mb-14">
+      <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-[#13b5ea] mb-3">
+        {section.eyebrow}
+      </p>
+      <h2 class="text-[2.2rem] font-extrabold text-slate-900 tracking-tight">
+        {section.heading}
+      </h2>
+      <p class="text-slate-400 mt-3 text-base max-w-lg mx-auto">{section.subheading}</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-5" data-features data-interval={ROTATE_MS}>
+      {/* Tab list */}
+      <div class="lg:col-span-2 flex flex-col gap-1" role="tablist" aria-label={section.heading}>
+        {
+          features.map((feature, i) => (
+            <button
+              type="button"
+              role="tab"
+              id={`feature-tab-${i}`}
+              aria-controls={`feature-panel-${i}`}
+              aria-selected={i === 0 ? "true" : "false"}
+              data-feature-tab={i}
+              class="anim anim-left relative text-left rounded-xl px-4 py-3.5 transition-all duration-300 cursor-pointer aria-selected:bg-white aria-selected:shadow-sm aria-selected:border aria-selected:border-slate-200 hover:bg-white/70"
+              style={`--anim-delay: ${(i * 0.07).toFixed(2)}s`}
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  data-tab-icon
+                  class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors bg-slate-100"
+                >
+                  <Icon
+                    name={feature.data.icon as IconName}
+                    size={15}
+                    class="text-slate-400 transition-colors"
+                  />
+                </div>
+                <p data-tab-title class="text-sm font-semibold text-slate-500 transition-colors">
+                  {feature.data.title}
+                </p>
+              </div>
+
+              {/* Toggled via the `hidden` attribute, not the `hidden` class:
+                   Tailwind's preflight makes `[hidden]` !important, so the
+                   attribute reliably beats any display utility. */}
+              <span
+                data-tab-bar
+                hidden
+                class="absolute left-0 top-3 bottom-3 w-0.5 bg-[#13b5ea] rounded-full"
+              />
+              <div
+                data-tab-progress
+                hidden
+                class="mt-3 h-0.5 bg-slate-100 rounded-full overflow-hidden"
+              >
+                <div class="feature-progress h-full bg-[#13b5ea] rounded-full" />
+              </div>
+            </button>
+          ))
+        }
+      </div>
+
+      {/* Panels: every feature is in the HTML; only the active one is shown. */}
+      <div
+        class="lg:col-span-3 bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col"
+      >
+        {
+          features.map((feature, i) => (
+            <div
+              id={`feature-panel-${i}`}
+              role="tabpanel"
+              aria-labelledby={`feature-tab-${i}`}
+              data-feature-panel={i}
+              hidden={i !== 0}
+            >
+              <div class="border-b border-slate-100 px-6 py-5">
+                <h3 class="font-bold text-slate-900 text-base">{feature.data.title}</h3>
+                <p class="text-slate-400 text-sm mt-1 leading-relaxed">
+                  {feature.data.description}
+                </p>
+              </div>
+              <div class="bg-slate-50/50 visual-enter">
+                <FeatureVisual feature={feature.data} />
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-features]");
+
+  if (root) {
+    const interval = Number(root.dataset.interval ?? 3375);
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>("[data-feature-tab]")];
+    const panels = [...root.querySelectorAll<HTMLElement>("[data-feature-panel]")];
+
+    let active = 0;
+    let timer: number | undefined;
+
+    /** CSS animations only run once, so re-add the class to replay them. */
+    const replay = (el: Element, className: string) => {
+      el.classList.remove(className);
+      void (el as HTMLElement).offsetWidth;
+      el.classList.add(className);
+    };
+
+    const show = (next: number) => {
+      active = next;
+
+      tabs.forEach((tab, i) => {
+        const on = i === next;
+        tab.setAttribute("aria-selected", on ? "true" : "false");
+
+        const icon = tab.querySelector<HTMLElement>("[data-tab-icon]")!;
+        const svg = icon.querySelector<SVGElement>("svg")!;
+        const title = tab.querySelector<HTMLElement>("[data-tab-title]")!;
+        const bar = tab.querySelector<HTMLElement>("[data-tab-bar]")!;
+        const progress = tab.querySelector<HTMLElement>("[data-tab-progress]")!;
+
+        icon.classList.toggle("bg-[#13b5ea]", on);
+        icon.classList.toggle("bg-slate-100", !on);
+        svg.classList.toggle("text-white", on);
+        svg.classList.toggle("text-slate-400", !on);
+        title.classList.toggle("text-slate-900", on);
+        title.classList.toggle("text-slate-500", !on);
+        bar.hidden = !on;
+        progress.hidden = !on;
+
+        if (on) replay(progress.firstElementChild!, "feature-progress");
+      });
+
+      panels.forEach((panel, i) => {
+        panel.hidden = i !== next;
+        if (i !== next) return;
+        replay(panel.querySelector(".visual-enter")!, "visual-enter");
+        panel.querySelectorAll(".visual-row").forEach((el) => replay(el, "visual-row"));
+      });
+    };
+
+    const start = () => {
+      stop();
+      timer = window.setInterval(() => show((active + 1) % tabs.length), interval);
+    };
+    const stop = () => {
+      if (timer) window.clearInterval(timer);
+    };
+
+    tabs.forEach((tab, i) =>
+      tab.addEventListener("click", () => {
+        show(i);
+        start();
+      })
+    );
+
+    // Only spend cycles rotating while the section is actually on screen.
+    new IntersectionObserver(
+      (entries) => (entries[0].isIntersecting ? start() : stop()),
+      { threshold: 0 }
+    ).observe(root);
+
+    document.addEventListener("visibilitychange", () =>
+      document.hidden ? stop() : start()
+    );
+
+    show(0);
+  }
+</script>

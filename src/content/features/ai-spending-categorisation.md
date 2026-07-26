@@ -1,0 +1,28 @@
+---
+order: 3
+title: "AI Spending Categorisation"
+description: "Every transaction is categorised in real time — Revenue, HMRC VAT, Dividends, Travel, Payroll and more. Trained on UK accounting standards. Override with one click."
+icon: "Brain"
+visual: "categorise"
+transactions:
+  - name: "Client Invoice Payment"
+    category: "Revenue"
+    amount: "£18,500"
+    color: "#10b981"
+  - name: "HMRC VAT Payment"
+    category: "HMRC VAT"
+    amount: "£6,200"
+    color: "#f59e0b"
+  - name: "Shareholder Distribution"
+    category: "Dividends"
+    amount: "£5,000"
+    color: "#6366f1"
+  - name: "British Airways"
+    category: "Travel"
+    amount: "£1,240"
+    color: "#0ea5e9"
+  - name: "Office Supplies"
+    category: "Overheads"
+    amount: "£320"
+    color: "#8b5cf6"
+---

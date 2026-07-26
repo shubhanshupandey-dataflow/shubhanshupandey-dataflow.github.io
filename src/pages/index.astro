@@ -1,0 +1,60 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import TopBar from "../components/TopBar.astro";
+import Nav from "../components/Nav.astro";
+import HeroSection from "../components/HeroSection.astro";
+import ShowcaseSection from "../components/ShowcaseSection.astro";
+import TryItFree from "../components/TryItFree.astro";
+import FeaturesSection from "../components/FeaturesSection.astro";
+import HowItWorks from "../components/HowItWorks.astro";
+import FaqSection from "../components/FaqSection.astro";
+import BookDemoSection from "../components/BookDemoSection.astro";
+import Footer from "../components/Footer.astro";
+import EmailPopup from "../components/EmailPopup.astro";
+import CookieConsent from "../components/CookieConsent.astro";
+import { getOrdered, getSection, getSite } from "../lib/content";
+import { faqPage, organization, webApplication, website } from "../lib/schema";
+
+const brand = await getSite("brand");
+const hero = await getSection("hero");
+const faqs = await getOrdered("faqs");
+
+// One @graph, exactly like the original, but the FAQ entries are read from the
+// same markdown the accordion renders instead of being duplicated by hand.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    organization(brand),
+    website(brand),
+    webApplication(brand),
+    faqPage(
+      brand,
+      faqs.map((faq) => faq.data)
+    ),
+  ],
+};
+---
+
+<BaseLayout
+  title={hero.pageTitle!}
+  description={hero.pageDescription}
+  canonical="/"
+  ogTitle={hero.pageTitle}
+  ogDescription={brand.defaultDescription}
+  jsonLd={jsonLd}
+>
+  <TopBar />
+  <Nav />
+  <main>
+    <HeroSection />
+    <ShowcaseSection />
+    <TryItFree />
+    <FeaturesSection />
+    <HowItWorks />
+    <FaqSection />
+    <BookDemoSection />
+  </main>
+  <Footer />
+  <EmailPopup />
+  <CookieConsent />
+</BaseLayout>

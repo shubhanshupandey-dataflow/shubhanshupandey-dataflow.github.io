@@ -1,0 +1,52 @@
+---
+import BookingForm from "./BookingForm.astro";
+import { getSection } from "../lib/content";
+
+const section = await getSection("book-demo");
+const { eyebrow, heading, subheading, testimonial, form } = section;
+---
+
+<section id="book-demo" class="py-24 bg-slate-50 border-t border-slate-100">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="anim anim-up grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      {/* Left copy */}
+      <div class="pt-2">
+        <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-[#13b5ea] mb-4">
+          {eyebrow}
+        </p>
+        <h2 class="text-[2.2rem] font-extrabold text-slate-900 tracking-tight mb-4">
+          {heading}
+        </h2>
+        <p class="text-slate-500 text-base leading-relaxed mb-4">{subheading}</p>
+
+        {
+          testimonial && (
+            <figure class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+              <div
+                class="anim anim-scale w-full"
+                style="--anim-delay: 0.2s"
+                aria-label={`${testimonial.stars} out of 5 stars`}
+              >
+                <div class="flex gap-0.5 mb-3" aria-hidden="true">
+                  {Array.from({ length: testimonial.stars }).map(() => (
+                    <span class="text-[#13b5ea] text-sm">★</span>
+                  ))}
+                </div>
+                <blockquote class="text-slate-600 text-sm leading-relaxed italic">
+                  "{testimonial.quote}"
+                </blockquote>
+              </div>
+            </figure>
+          )
+        }
+      </div>
+
+      {/* Right form */}
+      <div class="bg-white border border-slate-200 rounded-2xl p-7 shadow-sm">
+        <h3 class="font-bold text-slate-900 text-lg mb-1">{form?.title}</h3>
+        <p class="text-slate-400 text-sm mb-6">{form?.subtitle}</p>
+        <BookingForm />
+      </div>
+    </div>
+  </div>
+</section>

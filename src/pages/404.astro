@@ -1,0 +1,36 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import TopBar from "../components/TopBar.astro";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import Icon from "../components/Icon.astro";
+import { getSection } from "../lib/content";
+
+const section = await getSection("not-found");
+---
+
+<BaseLayout
+  title={section.pageTitle!}
+  description={section.pageDescription}
+  noindex
+  bodyClass="bg-slate-50"
+>
+  <div class="min-h-screen flex flex-col justify-between">
+    <div>
+      <TopBar />
+      <Nav />
+      <main class="max-w-md mx-auto text-center py-20 px-6">
+        <h1 class="text-2xl font-bold text-slate-900 mb-4">{section.heading}</h1>
+        <p class="text-slate-600 mb-8">{section.subheading}</p>
+        <a
+          href={section.ctas[0]?.href}
+          class="inline-flex items-center gap-2 bg-[#13b5ea] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#0e9fd2] transition-colors"
+        >
+          <Icon name="ArrowLeft" size={16} />
+          {section.ctas[0]?.label}
+        </a>
+      </main>
+    </div>
+    <Footer />
+  </div>
+</BaseLayout>
