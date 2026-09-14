@@ -1,0 +1,133 @@
+backend:
+  name: github
+  # Personal test copy of Ledgerai, served by GitHub Pages as a user site at
+  # https://shubhanshupandey-dataflow.github.io/ (the repo name makes it serve at the
+  # root, so every "/..." path matches the team site).
+  repo: shubhanshupandey-dataflow/shubhanshupandey-dataflow.github.io
+  branch: master
+  # GitHub Pages has no OAuth server, so login goes through the n8n proxy
+  # (sales-tools/n8n/decap-oauth): the popup opens admin/auth.html on this site,
+  # which forwards to n8n, and n8n sends it back to admin/callback.html here.
+  # base_url is set to the current origin in index.html — Decap only accepts the
+  # login result from a popup on exactly base_url.
+  auth_endpoint: admin/auth.html
+
+# No `local_backend` here, unlike the team repo: this copy exists to test the
+# GitHub login from `npm run dev`, and local_backend would bypass it on localhost.
+
+# Where uploaded images will be stored in the repository
+media_folder: "public/blogs"
+public_folder: "/blogs"
+
+# Optional: show drafts before publishing
+publish_mode: editorial_workflow
+
+collections:
+  - name: "blog"
+    label: "Blogs"
+    label_singular: "Blog"
+    # Must match the `blog` collection's loader in src/content.config.ts.
+    folder: "src/content/blog"
+    create: true
+    delete: true
+    slug: "{{slug}}"
+
+    # Every required field below mirrors a required field in the `blog` schema in
+    # src/content.config.ts — a post missing one fails `astro build`.
+    fields:
+      # ─────────────────────────────
+      # BASIC BLOG INFORMATION
+      # ─────────────────────────────
+
+      - label: "Title"
+        name: "title"
+        widget: "string"
+
+      - label: "Order"
+        name: "order"
+        widget: "number"
+        value_type: "int"
+        hint: "Position in the blog list and the previous/next links. Lower numbers come first."
+
+      - label: "Excerpt"
+        name: "excerpt"
+        widget: "text"
+
+      - label: "Cover Image"
+        name: "coverImage"
+        widget: "image"
+
+      - label: "Category"
+        name: "category"
+        widget: "string"
+
+      - label: "Date"
+        name: "date"
+        widget: "datetime"
+        format: "YYYY-MM-DD"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+
+      - label: "Reading Time"
+        name: "readingTime"
+        widget: "string"
+        default: "8 min read"
+
+      - label: "Author"
+        name: "author"
+        widget: "string"
+
+      # ─────────────────────────────
+      # SEO
+      # ─────────────────────────────
+
+      - label: "SEO"
+        name: "seo"
+        widget: "object"
+        collapsed: true
+
+        fields:
+
+          - label: "SEO Title"
+            name: "title"
+            widget: "string"
+
+          - label: "SEO Description"
+            name: "description"
+            widget: "text"
+
+          - label: "OG Title"
+            name: "ogTitle"
+            widget: "string"
+
+          - label: "OG Description"
+            name: "ogDescription"
+            widget: "text"
+
+          - label: "Suggested Image Prompt"
+            name: "suggestedImagePrompt"
+            widget: "text"
+            required: false
+
+      # ─────────────────────────────
+      # RELATED BLOGS
+      # ─────────────────────────────
+
+      # Stores each picked post's slug, which is what [slug].astro matches on.
+      - label: "Related Articles"
+        name: "related"
+        widget: "relation"
+        collection: "blog"
+        value_field: "{{slug}}"
+        search_fields: ["title"]
+        display_fields: ["title"]
+        multiple: true
+        required: false
+
+      # ─────────────────────────────
+      # BLOG CONTENT
+      # ─────────────────────────────
+
+      - label: "Content"
+        name: "body"
+        widget: "markdown"

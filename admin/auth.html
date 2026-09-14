@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <title>Signing in…</title>
+  </head>
+
+  <body>
+    <script>
+      // First hop of the GitHub login. Decap opens this page in its login popup
+      // (base_url + auth_endpoint in config.yml); hand over to the n8n OAuth proxy
+      // (sales-tools/n8n/decap-oauth), telling it which site to return to. n8n only
+      // accepts origins on its allowlist.
+      (function () {
+        var N8N_AUTH_URL = "https://n8n.dataflow.zone/webhook/decap-oauth/auth";
+        var params = new URLSearchParams(location.search);
+        params.set("origin", location.origin);
+        location.replace(N8N_AUTH_URL + "?" + params.toString());
+      })();
+    </script>
+  </body>
+</html>

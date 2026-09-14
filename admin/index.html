@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex" />
+
+    <link
+      href="/admin/config.yml"
+      type="text/yaml"
+      rel="cms-config-url"
+    />
+
+    <title>Content Manager</title>
+
+    <script>
+      // Decap is initialised by hand below, so base_url can follow this page's origin.
+      window.CMS_MANUAL_INIT = true;
+    </script>
+  </head>
+
+  <body>
+    <script src="https://unpkg.com/decap-cms@3.16.2/dist/decap-cms.js"></script>
+    <script>
+      // The GitHub login popup opens base_url + auth_endpoint (admin/auth.html) and
+      // Decap only accepts its answer from exactly base_url — so use whichever origin
+      // is serving the CMS: localhost in dev, the live domain in production.
+      // Merged over config.yml.
+      CMS.init({ config: { backend: { base_url: window.location.origin } } });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Signing in…</title>
+  </head>
+
+  <body style="font-family: system-ui, sans-serif; padding: 2rem">
+    <p id="status">Finishing sign-in…</p>
+
+    <script>
+      // Last hop of the GitHub login. The n8n OAuth proxy redirects the popup here
+      // with the result in the URL fragment. This page runs on the CMS's own origin,
+      // the origin Decap requires the popup to answer from, and replays Decap's
+      // popup handshake (decap-cms-lib-auth/netlify-auth.js):
+      //   popup -> CMS  "authorizing:github"
+      //   CMS -> popup  "authorizing:github"
+      //   popup -> CMS  "authorization:github:success:{token,provider}" (or :error:{message})
+      (function () {
+        var provider = "github";
+        var params = new URLSearchParams(location.hash.slice(1));
+        // Take the token out of the address bar and session history straight away.
+        history.replaceState(null, "", location.pathname);
+
+        var token = params.get("token");
+        var reason = params.get("error") || "GitHub login failed.";
+        var message = token
+          ? "authorization:" + provider + ":success:" + JSON.stringify({ token: token, provider: provider })
+          : "authorization:" + provider + ":error:" + JSON.stringify({ message: reason });
+
+        var status = document.getElementById("status");
+        if (!window.opener) {
+          status.textContent =
+            'This page only works inside the CMS login popup. Open /admin/ and click "Login with GitHub".';
+          return;
+        }
+        status.textContent = token
+          ? "Signed in. This window will close on its own."
+          : "Sign-in failed: " + reason;
+
+        // Only ever talk to a CMS window on this same origin.
+        function receive(e) {
+          if (e.origin !== location.origin || e.data !== "authorizing:" + provider) return;
+          window.removeEventListener("message", receive, false);
+          window.opener.postMessage(message, location.origin);
+        }
+        window.addEventListener("message", receive, false);
+        window.opener.postMessage("authorizing:" + provider, location.origin);
+      })();
+    </script>
+  </body>
+</html>
