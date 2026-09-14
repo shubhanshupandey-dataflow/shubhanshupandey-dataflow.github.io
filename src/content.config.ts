@@ -168,8 +168,15 @@ const blog = defineCollection({
     excerpt: z.string(),
     coverImage: z.string(),
     category: z.string(),
-    /** ISO date — drives both the displayed date and `datePublished`. */
-    date: z.string(),
+    /**
+     * ISO date — drives both the displayed date and `datePublished`.
+     *
+     * Decap CMS writes it unquoted (`date: 2026-09-14`), which the frontmatter
+     * YAML parser reads as a Date, so accept both and normalise to "YYYY-MM-DD".
+     */
+    date: z
+      .union([z.string(), z.date()])
+      .transform((d) => (typeof d === "string" ? d : d.toISOString().slice(0, 10))),
     readingTime: z.string(),
     author: z.string(),
     seo: z.object({
