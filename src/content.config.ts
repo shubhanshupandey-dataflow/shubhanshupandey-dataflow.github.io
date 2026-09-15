@@ -15,6 +15,23 @@ import { glob } from "astro/loaders";
 
 const md = (dir: string) => glob({ pattern: "**/*.md", base: `./src/content/${dir}` });
 
+/**
+ * An ISO date ("YYYY-MM-DD"). Decap CMS writes dates unquoted (`date: 2026-09-14`),
+ * which the frontmatter YAML parser reads as a Date, so accept both and normalise.
+ */
+const isoDate = () =>
+  z
+    .union([z.string(), z.date()])
+    .transform((d) => (typeof d === "string" ? d : d.toISOString().slice(0, 10)));
+
+/** True for what the CMS leaves behind when a group of optional fields is cleared. */
+const isBlank = (v: unknown): boolean => {
+  if (v === undefined || v === null || v === "") return true;
+  if (Array.isArray(v)) return v.every(isBlank);
+  if (typeof v === "object") return Object.values(v).every(isBlank);
+  return false;
+};
+
 /** A button or link rendered as a call to action. */
 const cta = z.object({
   label: z.string(),
@@ -120,20 +137,26 @@ const features = defineCollection({
       )
       .default([]),
 
-    /** visual: balance */
-    ledger: z
-      .object({
-        columns: z.array(z.string()),
-        rows: z.array(
-          z.object({
-            account: z.string(),
-            debit: z.string().default(""),
-            credit: z.string().default(""),
-          })
-        ),
-        footer: z.string(),
-      })
-      .optional(),
+    /**
+     * visual: balance. Every feature shares one CMS form, so one using another panel
+     * can be saved with an empty ledger group; treat that as no ledger.
+     */
+    ledger: z.preprocess(
+      (v) => (isBlank(v) ? undefined : v),
+      z
+        .object({
+          columns: z.array(z.string()),
+          rows: z.array(
+            z.object({
+              account: z.string(),
+              debit: z.string().default(""),
+              credit: z.string().default(""),
+            })
+          ),
+          footer: z.string(),
+        })
+        .optional()
+    ),
   }),
 });
 
@@ -168,15 +191,8 @@ const blog = defineCollection({
     excerpt: z.string(),
     coverImage: z.string(),
     category: z.string(),
-    /**
-     * ISO date — drives both the displayed date and `datePublished`.
-     *
-     * Decap CMS writes it unquoted (`date: 2026-09-14`), which the frontmatter
-     * YAML parser reads as a Date, so accept both and normalise to "YYYY-MM-DD".
-     */
-    date: z
-      .union([z.string(), z.date()])
-      .transform((d) => (typeof d === "string" ? d : d.toISOString().slice(0, 10))),
+    /** ISO date — drives both the displayed date and `datePublished`. */
+    date: isoDate(),
     readingTime: z.string(),
     author: z.string(),
     seo: z.object({
@@ -276,7 +292,7 @@ const sections = defineCollection({
         totalSpots: z.number(),
         baseSpotsLeft: z.number(),
         minSpotsLeft: z.number(),
-        decayStart: z.string(),
+        decayStart: isoDate(),
         decayEveryDays: z.number(),
         decayAmount: z.number(),
         /** `{left}` and `{total}` are substituted at runtime. */

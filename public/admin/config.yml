@@ -22,7 +22,19 @@ public_folder: "/blogs"
 # Optional: show drafts before publishing
 publish_mode: editorial_workflow
 
+# Every collection below mirrors src/content.config.ts. A field that is required
+# there is required here, and fixed choices are selects, so the CMS can't save
+# content that fails `astro build`. Fields the schema defaults (e.g. button style)
+# carry the same default here.
+#
+# No YAML anchors on purpose: shared field groups (buttons, forms, links) are
+# written out in full each time.
+
 collections:
+  # ═════════════════════════════
+  # BLOG POSTS
+  # ═════════════════════════════
+
   - name: "blog"
     label: "Blogs"
     label_singular: "Blog"
@@ -131,3 +143,680 @@ collections:
       - label: "Content"
         name: "body"
         widget: "markdown"
+
+  # ═════════════════════════════
+  # PAGE SECTIONS (src/content/sections)
+  # One fixed form per file. Each component loads its file by name, so sections
+  # can be edited but not created or deleted.
+  # ═════════════════════════════
+
+  - name: "sections"
+    label: "Page sections"
+    label_singular: "Section"
+    delete: false
+    editor:
+      preview: false
+    files:
+      # ── Home: top bar ──────────────────────────────────────────
+      - name: "topbar"
+        label: "Home · Top announcement bar"
+        file: "src/content/sections/topbar.md"
+        fields:
+          - label: "Announcement"
+            name: "announcement"
+            widget: "object"
+            hint: "Reads as: before **highlight** after — link label."
+            fields:
+              - { label: "Before", name: "before", widget: "string" }
+              - { label: "Highlight", name: "highlight", widget: "string" }
+              - { label: "After", name: "after", widget: "string" }
+              - { label: "Link label", name: "linkLabel", widget: "string", hint: "Opens the free-month popup." }
+
+      # ── Home: hero ─────────────────────────────────────────────
+      - name: "hero"
+        label: "Home · Hero"
+        file: "src/content/sections/hero.md"
+        fields:
+          - { label: "Page title (browser tab / Google)", name: "pageTitle", widget: "string" }
+          - { label: "Page description (Google)", name: "pageDescription", widget: "text" }
+          - { label: "Badge", name: "badge", widget: "string" }
+          - label: "Headline"
+            name: "headline"
+            widget: "object"
+            hint: "Reads as: before **accent** after. The accent is shown in the brand colour."
+            fields:
+              - { label: "Before", name: "before", widget: "string", required: false }
+              - { label: "Accent", name: "accent", widget: "string" }
+              - { label: "After", name: "after", widget: "string", required: false }
+          - { label: "Subheading", name: "subheading", widget: "text" }
+          - label: "Email form"
+            name: "form"
+            widget: "object"
+            collapsed: true
+            fields:
+              - { label: "Title", name: "title", widget: "string", required: false }
+              - { label: "Subtitle", name: "subtitle", widget: "string", required: false }
+              - { label: "Email placeholder", name: "placeholder", widget: "string", required: false }
+              - { label: "Submit button", name: "submitLabel", widget: "string" }
+              - { label: "Submit button while sending", name: "loadingLabel", widget: "string", default: "Sending...", required: false }
+              - { label: "Source (sent with the submission)", name: "source", widget: "string", required: false, hint: "Tells submissions from different forms apart." }
+              - { label: "Note under the form", name: "note", widget: "string", required: false }
+              - { label: "Success title", name: "successTitle", widget: "string", required: false }
+              - { label: "Success message", name: "successMessage", widget: "text", required: false }
+              - { label: "Error message", name: "errorMessage", widget: "string", default: "Something went wrong. Please try again.", required: false }
+              - { label: "Connection error message", name: "connectionErrorMessage", widget: "string", default: "Error connecting to server.", required: false }
+              - label: "Extra fields"
+                name: "fields"
+                widget: "list"
+                required: false
+                summary: "{{fields.name}} ({{fields.type}})"
+                fields:
+                  - { label: "Name (sent as)", name: "name", widget: "string" }
+                  - { label: "Placeholder", name: "placeholder", widget: "string" }
+                  - { label: "Type", name: "type", widget: "select", options: ["text", "email", "tel"], default: "text" }
+                  - { label: "Required", name: "required", widget: "boolean", default: false }
+          - label: "Buttons"
+            name: "ctas"
+            widget: "list"
+            required: false
+            summary: "{{fields.label}} ({{fields.style}})"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string", required: false, hint: "e.g. /blogs, #book-demo or a full URL. Leave empty for a button that only opens a popup." }
+              - { label: "Analytics event label", name: "event", widget: "string", required: false }
+              - { label: "Style", name: "style", widget: "select", options: ["primary", "secondary", "ghost"], default: "primary" }
+              - { label: "Opens the free-month popup", name: "opensPopup", widget: "boolean", default: false }
+              - { label: "External link (new tab)", name: "external", widget: "boolean", default: false }
+          - label: "Trust points"
+            name: "trustPoints"
+            widget: "list"
+            required: false
+            field: { label: "Point", name: "point", widget: "string" }
+
+      # ── Home: features header ──────────────────────────────────
+      - name: "features"
+        label: "Home · Features header"
+        file: "src/content/sections/features.md"
+        fields:
+          - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+          - { label: "Heading", name: "heading", widget: "string" }
+          - { label: "Subheading", name: "subheading", widget: "text" }
+
+      # ── Home: how it works header ──────────────────────────────
+      - name: "how-it-works"
+        label: "Home · How it works header"
+        file: "src/content/sections/how-it-works.md"
+        fields:
+          - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+          - { label: "Heading", name: "heading", widget: "string" }
+
+      # ── Home: showcase ─────────────────────────────────────────
+      - name: "showcase"
+        label: "Home · Free month showcase"
+        file: "src/content/sections/showcase.md"
+        fields:
+          - { label: "Badge", name: "badge", widget: "string" }
+          - label: "Headline"
+            name: "headline"
+            widget: "object"
+            hint: "Reads as: before **accent** after. The accent is shown in the brand colour."
+            fields:
+              - { label: "Before", name: "before", widget: "string", required: false }
+              - { label: "Accent", name: "accent", widget: "string" }
+              - { label: "After", name: "after", widget: "string", required: false }
+          - { label: "Subheading", name: "subheading", widget: "text" }
+          - label: "Illustration"
+            name: "image"
+            widget: "object"
+            hint: "The illustration itself is part of the design; only its alt text is editable."
+            fields:
+              - { label: "Alt text", name: "alt", widget: "string" }
+          - label: "Bullets"
+            name: "bullets"
+            widget: "list"
+            required: false
+            summary: "{{fields.text}}"
+            fields:
+              - { label: "Text", name: "text", widget: "string" }
+              - { label: "Tone", name: "tone", widget: "select", options: ["brand", "warning"], default: "brand" }
+          - label: "Buttons"
+            name: "ctas"
+            widget: "list"
+            required: false
+            summary: "{{fields.label}} ({{fields.style}})"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string", required: false, hint: "e.g. /blogs, #book-demo or a full URL. Leave empty for a button that only opens a popup." }
+              - { label: "Analytics event label", name: "event", widget: "string", required: false }
+              - { label: "Style", name: "style", widget: "select", options: ["primary", "secondary", "ghost"], default: "primary" }
+              - { label: "Opens the free-month popup", name: "opensPopup", widget: "boolean", default: false }
+              - { label: "External link (new tab)", name: "external", widget: "boolean", default: false }
+
+      # ── Home: try it free ──────────────────────────────────────
+      - name: "try-free"
+        label: "Home · Try it free (PDF to Excel)"
+        file: "src/content/sections/try-free.md"
+        fields:
+          - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+          - { label: "Heading", name: "heading", widget: "string" }
+          - { label: "Subheading", name: "subheading", widget: "text", hint: "{limit} is replaced with the daily limit." }
+          - { label: "Supported banks panel title", name: "panelTitle", widget: "string" }
+          - label: "Uploader"
+            name: "uploader"
+            widget: "object"
+            collapsed: true
+            hint: "{limit} and {remaining} are replaced with live numbers."
+            fields:
+              - { label: "Free conversions per day", name: "dailyLimit", widget: "number", value_type: "int", min: 1 }
+              - { label: "Max file size (MB)", name: "maxFileSizeMb", widget: "number", value_type: "int", min: 1 }
+              - { label: "API base URL", name: "apiBaseUrl", widget: "string", hint: "The converter backend. Only change this if the API moves." }
+              - { label: "Drop zone title", name: "dropTitle", widget: "string" }
+              - { label: "Drop zone hint", name: "dropHint", widget: "string" }
+              - { label: "Submit button", name: "submitLabel", widget: "string" }
+              - { label: "Submit button while processing", name: "processingLabel", widget: "string" }
+              - { label: "Remaining conversions label", name: "remainingLabel", widget: "string" }
+              - { label: "Email prompt label", name: "emailPromptLabel", widget: "string" }
+              - { label: "\"Sending to\" label", name: "sendingToLabel", widget: "string" }
+              - { label: "\"Change\" label", name: "changeLabel", widget: "string" }
+              - { label: "Wrong file type error", name: "invalidTypeError", widget: "string" }
+              - { label: "File too large error", name: "tooLargeError", widget: "string" }
+              - { label: "Generic error", name: "genericError", widget: "string" }
+              - { label: "Success title", name: "successTitle", widget: "string" }
+              - label: "Email modal"
+                name: "modal"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Body", name: "body", widget: "text" }
+                  - { label: "Email placeholder", name: "placeholder", widget: "string" }
+                  - { label: "Submit button", name: "submitLabel", widget: "string" }
+                  - { label: "Invalid email message", name: "invalidEmail", widget: "string" }
+                  - { label: "Note", name: "note", widget: "string" }
+              - label: "Daily limit reached"
+                name: "limitReached"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Body", name: "body", widget: "text" }
+          - label: "Supported banks"
+            name: "supportedBanks"
+            widget: "list"
+            required: false
+            hint: "Shown until the live list loads from the API."
+            field: { label: "Bank", name: "bank", widget: "string" }
+          - label: "Bullets"
+            name: "bullets"
+            widget: "list"
+            required: false
+            summary: "{{fields.text}}"
+            fields:
+              - { label: "Text", name: "text", widget: "string" }
+              - { label: "Tone", name: "tone", widget: "select", options: ["brand", "warning"], default: "brand" }
+          - label: "Buttons"
+            name: "ctas"
+            widget: "list"
+            required: false
+            summary: "{{fields.label}} ({{fields.style}})"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string", required: false, hint: "e.g. /blogs, #book-demo or a full URL. Leave empty for a button that only opens a popup." }
+              - { label: "Analytics event label", name: "event", widget: "string", required: false }
+              - { label: "Style", name: "style", widget: "select", options: ["primary", "secondary", "ghost"], default: "primary" }
+              - { label: "Opens the free-month popup", name: "opensPopup", widget: "boolean", default: false }
+              - { label: "External link (new tab)", name: "external", widget: "boolean", default: false }
+
+      # ── Home: book a demo ──────────────────────────────────────
+      - name: "book-demo"
+        label: "Home · Book a demo"
+        file: "src/content/sections/book-demo.md"
+        fields:
+          - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+          - { label: "Heading", name: "heading", widget: "string" }
+          - { label: "Subheading", name: "subheading", widget: "text" }
+          - label: "Testimonial"
+            name: "testimonial"
+            widget: "object"
+            fields:
+              - { label: "Quote", name: "quote", widget: "text" }
+              - { label: "Stars", name: "stars", widget: "number", value_type: "int", min: 1, max: 5, default: 5 }
+          - label: "Booking form"
+            name: "form"
+            widget: "object"
+            collapsed: true
+            fields:
+              - { label: "Title", name: "title", widget: "string", required: false }
+              - { label: "Subtitle", name: "subtitle", widget: "string", required: false }
+              - { label: "Email placeholder", name: "placeholder", widget: "string", required: false }
+              - { label: "Submit button", name: "submitLabel", widget: "string" }
+              - { label: "Submit button while sending", name: "loadingLabel", widget: "string", default: "Sending...", required: false }
+              - { label: "Source (sent with the submission)", name: "source", widget: "string", required: false, hint: "Tells submissions from different forms apart." }
+              - { label: "Note under the form", name: "note", widget: "string", required: false }
+              - { label: "Success title", name: "successTitle", widget: "string", required: false }
+              - { label: "Success message", name: "successMessage", widget: "text", required: false }
+              - { label: "Error message", name: "errorMessage", widget: "string", default: "Something went wrong. Please try again.", required: false }
+              - { label: "Connection error message", name: "connectionErrorMessage", widget: "string", default: "Error connecting to server.", required: false }
+              - label: "Form fields"
+                name: "fields"
+                widget: "list"
+                required: false
+                summary: "{{fields.name}} ({{fields.type}})"
+                fields:
+                  - { label: "Name (sent as)", name: "name", widget: "string" }
+                  - { label: "Placeholder", name: "placeholder", widget: "string" }
+                  - { label: "Type", name: "type", widget: "select", options: ["text", "email", "tel"], default: "text" }
+                  - { label: "Required", name: "required", widget: "boolean", default: false }
+
+      # ── Home: FAQ header ───────────────────────────────────────
+      - name: "faq"
+        label: "Home · FAQ header"
+        file: "src/content/sections/faq.md"
+        fields:
+          - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+          - { label: "Heading", name: "heading", widget: "string" }
+          - { label: "Subheading", name: "subheading", widget: "text" }
+
+      # ── Popups ─────────────────────────────────────────────────
+      - name: "email-popup"
+        label: "Popup · Free month email"
+        file: "src/content/sections/email-popup.md"
+        fields:
+          - { label: "Badge", name: "badge", widget: "string" }
+          - label: "Headline"
+            name: "headline"
+            widget: "object"
+            hint: "Reads as: before **accent** after. The accent is shown in the brand colour."
+            fields:
+              - { label: "Before", name: "before", widget: "string", required: false }
+              - { label: "Accent", name: "accent", widget: "string" }
+              - { label: "After", name: "after", widget: "string", required: false }
+          - { label: "Subheading", name: "subheading", widget: "text" }
+          - label: "Spots-left meter"
+            name: "scarcity"
+            widget: "object"
+            collapsed: true
+            hint: "Spots left start at 'base', drop by 'amount' every 'every days' from the start date, and never go below 'minimum'."
+            fields:
+              - { label: "Total spots", name: "totalSpots", widget: "number", value_type: "int", min: 1 }
+              - { label: "Spots left at start", name: "baseSpotsLeft", widget: "number", value_type: "int", min: 0 }
+              - { label: "Minimum spots left", name: "minSpotsLeft", widget: "number", value_type: "int", min: 0 }
+              - { label: "Countdown start date", name: "decayStart", widget: "string", pattern: ["^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "Use YYYY-MM-DD"] }
+              - { label: "Drop every (days)", name: "decayEveryDays", widget: "number", value_type: "int", min: 1 }
+              - { label: "Drop by (spots)", name: "decayAmount", widget: "number", value_type: "int", min: 0 }
+              - { label: "Label", name: "label", widget: "string", hint: "{left} and {total} are replaced with live numbers." }
+              - { label: "Claimed label", name: "claimedLabel", widget: "string", hint: "{claimed} is replaced with the number claimed." }
+          - label: "Email form"
+            name: "form"
+            widget: "object"
+            collapsed: true
+            fields:
+              - { label: "Title", name: "title", widget: "string", required: false }
+              - { label: "Subtitle", name: "subtitle", widget: "string", required: false }
+              - { label: "Email placeholder", name: "placeholder", widget: "string", required: false }
+              - { label: "Submit button", name: "submitLabel", widget: "string" }
+              - { label: "Submit button while sending", name: "loadingLabel", widget: "string", default: "Sending...", required: false }
+              - { label: "Source (sent with the submission)", name: "source", widget: "string", required: false, hint: "Tells submissions from different forms apart." }
+              - { label: "Note under the form", name: "note", widget: "string", required: false }
+              - { label: "Success title", name: "successTitle", widget: "string", required: false }
+              - { label: "Success message", name: "successMessage", widget: "text", required: false }
+              - { label: "Error message", name: "errorMessage", widget: "string", default: "Something went wrong. Please try again.", required: false }
+              - { label: "Connection error message", name: "connectionErrorMessage", widget: "string", default: "Error connecting to server.", required: false }
+              - label: "Extra fields"
+                name: "fields"
+                widget: "list"
+                required: false
+                summary: "{{fields.name}} ({{fields.type}})"
+                fields:
+                  - { label: "Name (sent as)", name: "name", widget: "string" }
+                  - { label: "Placeholder", name: "placeholder", widget: "string" }
+                  - { label: "Type", name: "type", widget: "select", options: ["text", "email", "tel"], default: "text" }
+                  - { label: "Required", name: "required", widget: "boolean", default: false }
+          - label: "Trust points"
+            name: "trustPoints"
+            widget: "list"
+            required: false
+            field: { label: "Point", name: "point", widget: "string" }
+
+      - name: "cookie-consent"
+        label: "Popup · Cookie consent"
+        file: "src/content/sections/cookie-consent.md"
+        fields:
+          - { label: "Heading", name: "heading", widget: "string" }
+          - { label: "Text", name: "subheading", widget: "text", hint: "{links} is replaced with the policy links below." }
+          - label: "Policy links"
+            name: "links"
+            widget: "list"
+            required: false
+            summary: "{{fields.label}} → {{fields.href}}"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string" }
+          - label: "Buttons"
+            name: "ctas"
+            widget: "list"
+            required: false
+            summary: "{{fields.label}} ({{fields.style}})"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string", required: false, hint: "e.g. /blogs, #book-demo or a full URL. Leave empty for a button that only opens a popup." }
+              - { label: "Analytics event label", name: "event", widget: "string", required: false }
+              - { label: "Style", name: "style", widget: "select", options: ["primary", "secondary", "ghost"], default: "primary" }
+              - { label: "Opens the free-month popup", name: "opensPopup", widget: "boolean", default: false }
+              - { label: "External link (new tab)", name: "external", widget: "boolean", default: false }
+
+      # ── Blog pages ─────────────────────────────────────────────
+      - name: "blog-index"
+        label: "Blog · List page"
+        file: "src/content/sections/blog-index.md"
+        fields:
+          - { label: "Page title (browser tab / Google)", name: "pageTitle", widget: "string" }
+          - { label: "Page description (Google)", name: "pageDescription", widget: "text" }
+          - { label: "Badge", name: "badge", widget: "string" }
+          - label: "Headline"
+            name: "headline"
+            widget: "object"
+            hint: "Reads as: before **accent** after. The accent is shown in the brand colour."
+            fields:
+              - { label: "Before", name: "before", widget: "string", required: false }
+              - { label: "Accent", name: "accent", widget: "string" }
+              - { label: "After", name: "after", widget: "string", required: false }
+          - { label: "Subheading", name: "subheading", widget: "text" }
+          - { label: "Search placeholder", name: "searchPlaceholder", widget: "string" }
+          - { label: "\"All categories\" label", name: "allCategoriesLabel", widget: "string" }
+          - label: "No results"
+            name: "emptyState"
+            widget: "object"
+            fields:
+              - { label: "Message", name: "message", widget: "string" }
+              - { label: "Clear filters link", name: "action", widget: "string" }
+
+      - name: "blog-cta"
+        label: "Blog · List page call to action"
+        file: "src/content/sections/blog-cta.md"
+        fields:
+          - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+          - { label: "Heading", name: "heading", widget: "string" }
+          - { label: "Subheading", name: "subheading", widget: "text" }
+          - label: "Buttons"
+            name: "ctas"
+            widget: "list"
+            required: false
+            summary: "{{fields.label}} ({{fields.style}})"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string", required: false, hint: "e.g. /blogs, #book-demo or a full URL. Leave empty for a button that only opens a popup." }
+              - { label: "Analytics event label", name: "event", widget: "string", required: false }
+              - { label: "Style", name: "style", widget: "select", options: ["primary", "secondary", "ghost"], default: "primary" }
+              - { label: "Opens the free-month popup", name: "opensPopup", widget: "boolean", default: false }
+              - { label: "External link (new tab)", name: "external", widget: "boolean", default: false }
+
+      - name: "blog-post-cta"
+        label: "Blog · Post call to action"
+        file: "src/content/sections/blog-post-cta.md"
+        fields:
+          - { label: "Heading", name: "heading", widget: "string" }
+          - { label: "Subheading", name: "subheading", widget: "text" }
+          - label: "Buttons"
+            name: "ctas"
+            widget: "list"
+            required: false
+            summary: "{{fields.label}} ({{fields.style}})"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string", required: false, hint: "e.g. /blogs, #book-demo or a full URL. Leave empty for a button that only opens a popup." }
+              - { label: "Analytics event label", name: "event", widget: "string", required: false }
+              - { label: "Style", name: "style", widget: "select", options: ["primary", "secondary", "ghost"], default: "primary" }
+              - { label: "Opens the free-month popup", name: "opensPopup", widget: "boolean", default: false }
+              - { label: "External link (new tab)", name: "external", widget: "boolean", default: false }
+
+      # ── 404 ────────────────────────────────────────────────────
+      - name: "not-found"
+        label: "404 page"
+        file: "src/content/sections/not-found.md"
+        fields:
+          - { label: "Page title (browser tab)", name: "pageTitle", widget: "string" }
+          - { label: "Page description", name: "pageDescription", widget: "text" }
+          - { label: "Heading", name: "heading", widget: "string" }
+          - { label: "Subheading", name: "subheading", widget: "text" }
+          - label: "Buttons"
+            name: "ctas"
+            widget: "list"
+            required: false
+            summary: "{{fields.label}} ({{fields.style}})"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string", required: false, hint: "e.g. /blogs, #book-demo or a full URL. Leave empty for a button that only opens a popup." }
+              - { label: "Analytics event label", name: "event", widget: "string", required: false }
+              - { label: "Style", name: "style", widget: "select", options: ["primary", "secondary", "ghost"], default: "primary" }
+              - { label: "Opens the free-month popup", name: "opensPopup", widget: "boolean", default: false }
+              - { label: "External link (new tab)", name: "external", widget: "boolean", default: false }
+
+  # ═════════════════════════════
+  # FEATURES (src/content/features) — the rotating feature cards
+  # ═════════════════════════════
+
+  - name: "features"
+    label: "Features"
+    label_singular: "Feature"
+    folder: "src/content/features"
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    identifier_field: "title"
+    summary: "{{order}}. {{title}} ({{visual}} panel)"
+    sortable_fields: ["order", "title"]
+    editor:
+      preview: false
+    fields:
+      - { label: "Order", name: "order", widget: "number", value_type: "int", hint: "Lower numbers come first." }
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "text" }
+      - label: "Icon"
+        name: "icon"
+        widget: "select"
+        options: ["Sparkles", "ArrowRight", "ArrowLeft", "Check", "CheckCircle2", "Loader", "Loader2", "LogIn", "Gift", "Upload", "Brain", "BarChart3", "Bell", "Mail", "Landmark", "ChevronDown", "ChevronRight", "X", "Flame", "UploadCloud", "FileText", "AlertCircle", "Clock", "Lock", "Calendar", "Home", "Search", "User"]
+        hint: "Lucide icon name. New icons have to be added in code (scripts/gen-icons.mjs)."
+      - label: "Demo panel"
+        name: "visual"
+        widget: "select"
+        options: ["email", "statements", "categorise", "balance", "alerts"]
+        hint: "Which demo panel this feature shows. Fill in only that panel's group below; the others are ignored."
+
+      - label: "Email panel · Emails"
+        name: "emails"
+        widget: "list"
+        required: false
+        collapsed: true
+        summary: "{{fields.time}} {{fields.subject}}"
+        fields:
+          - { label: "From", name: "from", widget: "string" }
+          - { label: "Subject", name: "subject", widget: "string" }
+          - { label: "Time", name: "time", widget: "string", hint: "e.g. 09:14" }
+      - { label: "Email panel · Note", name: "emailNote", widget: "string", required: false }
+
+      - label: "Statements panel · Banks"
+        name: "banks"
+        widget: "list"
+        required: false
+        collapsed: true
+        summary: "{{fields.name}} — {{fields.client}}"
+        fields:
+          - { label: "Bank", name: "name", widget: "string" }
+          - { label: "Client", name: "client", widget: "string" }
+          - { label: "Period", name: "date", widget: "string", hint: "Free text, e.g. 01 Jan–31 Jan 2025" }
+          - { label: "Transactions", name: "transactions", widget: "number", value_type: "int", min: 0 }
+          - { label: "Colour", name: "color", widget: "color" }
+      - { label: "Statements panel · Badge", name: "bankBadge", widget: "string", required: false }
+
+      - label: "Categorise panel · Transactions"
+        name: "transactions"
+        widget: "list"
+        required: false
+        collapsed: true
+        summary: "{{fields.name}} — {{fields.category}} {{fields.amount}}"
+        fields:
+          - { label: "Name", name: "name", widget: "string" }
+          - { label: "Category", name: "category", widget: "string" }
+          - { label: "Amount", name: "amount", widget: "string", hint: "Shown as typed, e.g. £1,240" }
+          - { label: "Colour", name: "color", widget: "color" }
+
+      - label: "Alerts panel · Alerts"
+        name: "alerts"
+        widget: "list"
+        required: false
+        collapsed: true
+        summary: "{{fields.company}} — {{fields.label}}"
+        fields:
+          - { label: "Company", name: "company", widget: "string" }
+          - { label: "Bank", name: "bank", widget: "string" }
+          - { label: "Status label", name: "label", widget: "string" }
+          - { label: "Colour", name: "color", widget: "color" }
+          - label: "Icon"
+            name: "icon"
+            widget: "select"
+            options: ["Sparkles", "ArrowRight", "ArrowLeft", "Check", "CheckCircle2", "Loader", "Loader2", "LogIn", "Gift", "Upload", "Brain", "BarChart3", "Bell", "Mail", "Landmark", "ChevronDown", "ChevronRight", "X", "Flame", "UploadCloud", "FileText", "AlertCircle", "Clock", "Lock", "Calendar", "Home", "Search", "User"]
+
+      # Sub-fields are optional so features with other panels can still be saved;
+      # the schema drops an empty ledger, but a half-filled one fails the build.
+      - label: "Balance panel · Ledger"
+        name: "ledger"
+        widget: "object"
+        required: false
+        collapsed: true
+        hint: "Only for the balance panel. If you use it, fill in columns, rows and footer."
+        fields:
+          - label: "Columns"
+            name: "columns"
+            widget: "list"
+            required: false
+            field: { label: "Column", name: "column", widget: "string" }
+          - label: "Rows"
+            name: "rows"
+            widget: "list"
+            required: false
+            summary: "{{fields.account}}"
+            fields:
+              - { label: "Account", name: "account", widget: "string" }
+              - { label: "Debit", name: "debit", widget: "string", required: false }
+              - { label: "Credit", name: "credit", widget: "string", required: false }
+          - { label: "Footer", name: "footer", widget: "string", required: false }
+
+  # ═════════════════════════════
+  # HOW IT WORKS STEPS (src/content/steps)
+  # ═════════════════════════════
+
+  - name: "steps"
+    label: "How it works steps"
+    label_singular: "Step"
+    folder: "src/content/steps"
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    identifier_field: "title"
+    summary: "{{order}}. {{title}}"
+    sortable_fields: ["order", "title"]
+    editor:
+      preview: false
+    fields:
+      - { label: "Order", name: "order", widget: "number", value_type: "int", hint: "Lower numbers come first." }
+      - { label: "Number shown on the card", name: "number", widget: "string", hint: "e.g. 01" }
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "text" }
+      - label: "Icon"
+        name: "icon"
+        widget: "select"
+        options: ["Sparkles", "ArrowRight", "ArrowLeft", "Check", "CheckCircle2", "Loader", "Loader2", "LogIn", "Gift", "Upload", "Brain", "BarChart3", "Bell", "Mail", "Landmark", "ChevronDown", "ChevronRight", "X", "Flame", "UploadCloud", "FileText", "AlertCircle", "Clock", "Lock", "Calendar", "Home", "Search", "User"]
+        hint: "Lucide icon name. New icons have to be added in code (scripts/gen-icons.mjs)."
+
+  # ═════════════════════════════
+  # FAQS (src/content/faqs)
+  # ═════════════════════════════
+
+  - name: "faqs"
+    label: "FAQs"
+    label_singular: "FAQ"
+    folder: "src/content/faqs"
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    identifier_field: "question"
+    summary: "{{order}}. {{question}}"
+    sortable_fields: ["order", "question"]
+    editor:
+      preview: false
+    fields:
+      - { label: "Order", name: "order", widget: "number", value_type: "int", hint: "Lower numbers come first." }
+      - { label: "Question", name: "question", widget: "string" }
+      - { label: "Answer", name: "answer", widget: "text", hint: "Also used for Google's FAQ rich results." }
+
+  # ═════════════════════════════
+  # SITE SETTINGS (src/content/site)
+  # ═════════════════════════════
+
+  - name: "site"
+    label: "Site settings"
+    delete: false
+    editor:
+      preview: false
+    files:
+      - name: "navigation"
+        label: "Navigation (header)"
+        file: "src/content/site/navigation.md"
+        fields:
+          - label: "Menu links"
+            name: "links"
+            widget: "list"
+            summary: "{{fields.label}} → {{fields.href}}"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string", hint: "e.g. /blogs or /#features" }
+          - label: "Login link"
+            name: "login"
+            widget: "object"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string" }
+          - label: "Header button"
+            name: "cta"
+            widget: "object"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string", required: false, hint: "e.g. /blogs, #book-demo or a full URL. Leave empty for a button that only opens a popup." }
+              - { label: "Analytics event label", name: "event", widget: "string", required: false }
+              - { label: "Style", name: "style", widget: "select", options: ["primary", "secondary", "ghost"], default: "primary" }
+              - { label: "Opens the free-month popup", name: "opensPopup", widget: "boolean", default: false }
+              - { label: "External link (new tab)", name: "external", widget: "boolean", default: false }
+
+      - name: "footer"
+        label: "Footer"
+        file: "src/content/site/footer.md"
+        fields:
+          - { label: "Copyright", name: "copyright", widget: "string" }
+          - label: "Links"
+            name: "links"
+            widget: "list"
+            summary: "{{fields.label}} → {{fields.href}}"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Link", name: "href", widget: "string" }
+
+      - name: "brand"
+        label: "Brand, SEO & tracking"
+        file: "src/content/site/brand.md"
+        fields:
+          - { label: "Site name", name: "name", widget: "string" }
+          - { label: "Legal name", name: "legalName", widget: "string", required: false }
+          # Brand images live at the root of public/, not in public/blogs.
+          - { label: "Logo", name: "logo", widget: "image", media_folder: "/public", public_folder: "/" }
+          - { label: "Logo alt text", name: "logoAlt", widget: "string" }
+          - { label: "Favicon", name: "favicon", widget: "image", media_folder: "/public", public_folder: "/" }
+          - { label: "Social share image (OG image)", name: "ogImage", widget: "image", media_folder: "/public", public_folder: "/" }
+          - { label: "Site URL", name: "url", widget: "string", hint: "Used in canonical links, RSS and structured data." }
+          - { label: "App URL", name: "appUrl", widget: "string", required: false }
+          - { label: "Default page title", name: "defaultTitle", widget: "string" }
+          - { label: "Default page description", name: "defaultDescription", widget: "text" }
+          - { label: "Application description (structured data)", name: "applicationDescription", widget: "text", required: false }
+          # Tracking & forms — changing these affects every page.
+          - { label: "web3forms access key", name: "formAccessKey", widget: "string", hint: "Every form on the site submits with this key. A wrong value silently breaks all forms." }
+          - { label: "Google Tag Manager ID", name: "gtmId", widget: "string", required: false, hint: "Changing this moves analytics to another container." }
+          - { label: "Google Ads ID", name: "googleAdsId", widget: "string", required: false }
+          - { label: "Booking conversion label", name: "bookingConversionLabel", widget: "string", required: false, hint: "Google Ads send_to value fired when a demo is booked." }
