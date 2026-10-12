@@ -1,5 +1,6 @@
 ---
-title: "From PDF to Trial Balance: A Faster Workflow for Modern Accountants with Ease"
+title: "From PDF to Trial Balance: A Faster Workflow for Modern Accountants with
+  Easeee"
 order: 1
 excerpt: Discover how modern accountants automate client data extraction.
   Convert PDFs, emails, and receipts into a clean, reconciled Trial Balance in
