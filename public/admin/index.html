@@ -28,5 +28,43 @@
       // Merged over config.yml.
       CMS.init({ config: { backend: { base_url: window.location.origin } } });
     </script>
+    <script>
+      // Preview with the site's own CSS. Every page loads global.css (BaseLayout),
+      // so take the stylesheets from the home page: <link>s in a build, inline
+      // <style> tags in `astro dev`.
+      fetch("/")
+        .then((r) => r.text())
+        .then((html) => {
+          const doc = new DOMParser().parseFromString(html, "text/html");
+          doc.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
+            CMS.registerPreviewStyle(new URL(link.getAttribute("href"), location.href).href);
+          });
+          const css = [...doc.querySelectorAll("style")].map((s) => s.textContent).join("\n");
+          if (css) CMS.registerPreviewStyle(css, { raw: true });
+        });
+
+      // Title, cover image and body, with the classes src/pages/blogs/[slug].astro
+      // uses, so the .prose-content styles apply. getAsset also resolves an image
+      // that was just uploaded and not saved yet.
+      CMS.registerPreviewTemplate("blog", ({ entry, widgetFor, getAsset }) => {
+        const title = entry.getIn(["data", "title"]);
+        const cover = entry.getIn(["data", "coverImage"]);
+        return h(
+          "div",
+          { className: "prose-content max-w-none", style: { padding: "2rem" } },
+          h("h1", {}, title),
+          cover &&
+            h(
+              "div",
+              {
+                className:
+                  "aspect-[21/9] rounded-3xl overflow-hidden mb-12 shadow-sm border border-slate-100 bg-slate-100",
+              },
+              h("img", { src: getAsset(cover).toString(), alt: title, className: "w-full h-full object-cover" }),
+            ),
+          widgetFor("body"),
+        );
+      });
+    </script>
   </body>
 </html>
